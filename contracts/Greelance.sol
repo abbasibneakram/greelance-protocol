@@ -16,18 +16,18 @@ contract Greelance is IERC20, Ownable {
 
     // Maximum sellable amount for 24 hours
     uint256 public maxSellableAmount= 1000*10**9;
-    bool public maxSellableRestrictionEnabled = true; // Default to enabled
+    bool public maxSellableRestrictionEnabled = true; // Default to disabled
 
     // Trading status
-    bool public isTradingPaused = true;
-    bool public trading24HrsRestrictionEnabled = false; // Default to enabled
+    bool public isTradingPaused = true; // Default to enabled
+    bool public trading24HrsRestrictionEnabled = false; // Default to disabled
     mapping(address=>uint256) public lastTradeTime;
 
     //tax status
     uint256 public buyTaxPercentage = 5;
     uint256 public sellTaxPercentage = 5;
     address public immutable taxCollector;
-    bool public taxDeductionEnabled = false;
+    bool public taxDeductionEnabled = false;  // Default to disabled
     mapping(address=>bool) public taxExemptWallet;
     address uniswapRouterAddress = 0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D;
 
