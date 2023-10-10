@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.19;
+pragma solidity 0.8.20;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
@@ -24,10 +24,10 @@ contract Greelance is IERC20, Ownable {
     mapping(address=>uint256) public lastTradeTime;
 
     //tax status
-    uint256 buyTaxPercentage = 5;
-    uint256 sellTaxPercentage = 5;
-    address immutable taxCollector;
-    bool taxDeductionEnabled = false;
+    uint256 public buyTaxPercentage = 5;
+    uint256 public sellTaxPercentage = 5;
+    address public immutable taxCollector;
+    bool public taxDeductionEnabled = false;
     mapping(address=>bool) public taxExemptWallet;
     address uniswapRouterAddress = 0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D;
 
@@ -150,32 +150,32 @@ contract Greelance is IERC20, Ownable {
             "Transfer restricted before 24 hours");
                 if(amount > maxSellableAmount){
                     _updateBalances(sender,recipient,maxSellableAmount-taxAmount);
-                    _balances[taxCollector] = _balances[taxCollector]+taxAmount;
+                    _updateBalances(sender,taxCollector,taxAmount);
                 }
                 else{
                      _updateBalances(sender,recipient,amount-taxAmount);
-                     _balances[taxCollector] = _balances[taxCollector]+taxAmount;
+                    _updateBalances(sender,recipient,taxAmount);
                 }
         }
         else if(taxDeductionEnabled && !taxExemptWallet[sender] && trading24HrsRestrictionEnabled && !maxSellableRestrictionEnabled){
             require(block.timestamp-lastTradeTime[sender] >= 1 days,
             "Transfer restricted before 24 hours");
             _updateBalances(sender,recipient,amount-taxAmount);
-            _balances[taxCollector] = _balances[taxCollector]+taxAmount;
+            _updateBalances(sender,recipient,taxAmount);
         }
         else if(taxDeductionEnabled && !taxExemptWallet[sender] && !trading24HrsRestrictionEnabled && maxSellableRestrictionEnabled){
             if(amount > maxSellableAmount){
                     _updateBalances(sender,recipient,maxSellableAmount-taxAmount);
-                    _balances[taxCollector] = _balances[taxCollector]+taxAmount;
+                    _updateBalances(sender,recipient,taxAmount);
             }
             else{
                 _updateBalances(sender,recipient,amount-taxAmount);
-                _balances[taxCollector] = _balances[taxCollector]+taxAmount;
+                _updateBalances(sender,recipient,taxAmount);
             }
         }
         else if(taxDeductionEnabled && !taxExemptWallet[sender]){
             _updateBalances(sender,recipient,amount-taxAmount);
-            _balances[taxCollector] = _balances[taxCollector]+taxAmount;
+            _updateBalances(sender,recipient,taxAmount);
         }
         else if(!trading24HrsRestrictionEnabled && maxSellableRestrictionEnabled){
             if(amount > maxSellableAmount){
@@ -211,14 +211,17 @@ contract Greelance is IERC20, Ownable {
 
     // Function to set the maximum sellable amount (only callable by the owner)
     function setMaxSellableAmount(uint256 _maxAmount) external onlyOwner {
+        require(_maxAmount>0,"Invalid amount!");
         maxSellableAmount = _maxAmount;
     }
 
     function setBuyTaxAmount(uint256 _taxAmount) external onlyOwner {
+        require(_taxAmount<=20,"Tax not more than 20!");
         buyTaxPercentage = _taxAmount;
     }
 
      function setSellTaxAmount(uint256 _taxAmount) external onlyOwner {
+        require(_taxAmount<=20,"Tax not more than 20!");
         sellTaxPercentage = _taxAmount;
     }
 
@@ -234,6 +237,7 @@ contract Greelance is IERC20, Ownable {
 
     // Function to exclude a wallet from tax (only callable by the owner)
     function excludeFromTax(address account) external onlyOwner {
+        require(account != address(0), "Address can't be zero address");
         taxExemptWallet[account] = true;
     } 
     // Function to disable maximum sellable amount restriction (only callable by the owner)
@@ -252,11 +256,12 @@ contract Greelance is IERC20, Ownable {
     }
 
     // Function to start or pause trading (only callable by the owner)
-    function setTradingStatus(bool _paused) external onlyOwner {
-        tradingPaused = _paused;
+    function setTradingStatus() external onlyOwner {
+        tradingPaused = true;
     }
 
     function setUniswapRouterAddress(address _router) external onlyOwner {
+         require(_router != address(0), "Router Address can't be zero address");
         uniswapRouterAddress = _router;
     }
 }
