@@ -19,8 +19,8 @@ contract Greelance is IERC20, Ownable {
     bool public maxSellableRestrictionEnabled = true; // Default to enabled
 
     // Trading status
-    bool public tradingPaused = true;
-    bool public trading24HrsRestrictionEnabled = true; // Default to enabled
+    bool public isTradingPaused = true;
+    bool public trading24HrsRestrictionEnabled = false; // Default to enabled
     mapping(address=>uint256) public lastTradeTime;
 
     //tax status
@@ -132,7 +132,7 @@ contract Greelance is IERC20, Ownable {
         address recipient,
         uint256 amount
     ) internal nonReentrant {
-        require(tradingPaused == false, "Trading is paused");
+        require(isTradingPaused == false, "Trading is paused");
         require(sender != address(0), "Transfer from the zero address");
         require(recipient != address(0), "Transfer to the zero address");
         require(_balances[sender] >= amount, "Insufficient balance");
@@ -256,8 +256,8 @@ contract Greelance is IERC20, Ownable {
     }
 
     // Function to start or pause trading (only callable by the owner)
-    function setTradingStatus() external onlyOwner {
-        tradingPaused = true;
+    function startTrading() external onlyOwner {
+        isTradingPaused = false;
     }
 
     function setUniswapRouterAddress(address _router) external onlyOwner {
