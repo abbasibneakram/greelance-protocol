@@ -10,6 +10,7 @@ contract Greelance is IERC20, Ownable {
     string public symbol = "GRL";
     uint8 public decimals = 9;
     uint256 public totalSupply = 2000000000 * 10**uint256(decimals);
+    bool private tokenMinted = false;
 
     mapping(address => uint256) private _balances;
     mapping(address => mapping(address => uint256)) private _allowances;
@@ -29,7 +30,7 @@ contract Greelance is IERC20, Ownable {
     address public immutable taxCollector;
     bool public taxDeductionEnabled = false;  // Default to disabled
     mapping(address=>bool) public taxExemptWallet;
-    address uniswapRouterAddress = 0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D;
+    address uniswapPairAddress;
 
     // Reentrancy guard
     bool private _notEntered = true;
@@ -42,10 +43,15 @@ contract Greelance is IERC20, Ownable {
     }
 
     constructor() {
-        _balances[msg.sender] = totalSupply;
         taxCollector = owner();
+        taxExemptWallet[owner()] = true;
     }
 
+    function mint() external onlyOwner{
+        require(!tokenMinted,"Tokens already minted!");
+        _balances[owner()] = totalSupply;
+        tokenMinted = true;
+    }
     function balanceOf(address account) external view override returns (uint256) {
         return _balances[account];
     }
@@ -132,12 +138,12 @@ contract Greelance is IERC20, Ownable {
         address recipient,
         uint256 amount
     ) internal nonReentrant {
-        require(isTradingPaused == false, "Trading is paused");
+        require(!isTradingPaused || taxExemptWallet[sender] || taxExemptWallet[recipient], "Trading is paused");
         require(sender != address(0), "Transfer from the zero address");
         require(recipient != address(0), "Transfer to the zero address");
         require(_balances[sender] >= amount, "Insufficient balance");
 
-        uint256 taxRate = sender == uniswapRouterAddress ? buyTaxPercentage : sellTaxPercentage;
+        uint256 taxRate = sender == uniswapPairAddress ? buyTaxPercentage : sellTaxPercentage;
         uint256 taxAmount = 0;
         if (maxSellableRestrictionEnabled){
             taxAmount = (maxSellableAmount * taxRate) / 100;
@@ -240,6 +246,13 @@ contract Greelance is IERC20, Ownable {
         require(account != address(0), "Address can't be zero address");
         taxExemptWallet[account] = true;
     } 
+
+     // Function to include a wallet in tax (only callable by the owner)
+    function includeForTax(address account) external onlyOwner {
+        require(account != address(0), "Address can't be zero address");
+        taxExemptWallet[account] = false;
+    } 
+
     // Function to disable maximum sellable amount restriction (only callable by the owner)
     function removeMaxSellableRestriction() external onlyOwner {
         maxSellableRestrictionEnabled = false;
@@ -260,8 +273,8 @@ contract Greelance is IERC20, Ownable {
         isTradingPaused = false;
     }
 
-    function setUniswapRouterAddress(address _router) external onlyOwner {
-         require(_router != address(0), "Router Address can't be zero address");
-        uniswapRouterAddress = _router;
+    function setUniswapPairAddress(address _pair) external onlyOwner {
+         require(_pair != address(0), "Pair Address can't be zero address");
+        uniswapPairAddress = _pair;
     }
 }
