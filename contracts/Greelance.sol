@@ -1,85 +1,171 @@
+/*
+
+   _____                        _                               
+  / ____|                      | |                              
+ | |  __   _ __    ___    ___  | |   __ _   _ __     ___    ___ 
+ | | |_ | | '__|  / _ \  / _ \ | |  / _` | | '_ \   / __|  / _ \
+ | |__| | | |    |  __/ |  __/ | | | (_| | | | | | | (__  |  __/
+  \_____| |_|     \___|  \___| |_|  \__,_| |_| |_|  \___|  \___|
+                                                                
+                                                                                                    
+                                                      
+Official Links
+
+Website: https://greelance.com/
+Twitter: https://twitter.com/GreelanceI
+Telegram: https://t.me/greelancer 
+Discord: https://discord.gg/ukNCBwQCD9
+*/
+
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.20;
 
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "@openzeppelin/contracts/access/Ownable.sol";
+pragma solidity 0.8.19;
 
-contract Greelance is IERC20, Ownable {
+interface IERC20 {
+    function totalSupply() external view returns (uint256);
 
-    string public name = "Greelance";
-    string public symbol = "GRL";
-    uint8 public decimals = 9;
-    uint256 public totalSupply = 2000000000 * 10**uint256(decimals);
-    bool private tokenMinted = false;
+    function balanceOf(address account) external view returns (uint256);
 
-    mapping(address => uint256) private _balances;
-    mapping(address => mapping(address => uint256)) private _allowances;
+    function transfer(
+        address recipient,
+        uint256 amount
+    ) external returns (bool);
 
-    // Maximum sellable amount for 24 hours
-    uint256 public maxSellableAmount= 1000*10**9;
-    bool public maxSellableRestrictionEnabled = true; // Default to disabled
+    function allowance(
+        address owner,
+        address spender
+    ) external view returns (uint256);
 
-    // Trading status
-    bool public isTradingPaused = true; // Default to enabled
-    bool public trading24HrsRestrictionEnabled = false; // Default to disabled
-    mapping(address=>uint256) public lastTradeTime;
+    function approve(address spender, uint256 amount) external returns (bool);
 
-    //tax status
-    uint256 public buyTaxPercentage = 5;
-    uint256 public sellTaxPercentage = 5;
-    address public immutable taxCollector;
-    bool public taxDeductionEnabled = false;  // Default to disabled
-    mapping(address=>bool) public taxExemptWallet;
-    address uniswapPairAddress;
+    function transferFrom(
+        address sender,
+        address recipient,
+        uint256 amount
+    ) external returns (bool);
 
-    // Reentrancy guard
-    bool private _notEntered = true;
+    event Transfer(address indexed from, address indexed to, uint256 value);
+    event Approval(
+        address indexed owner,
+        address indexed spender,
+        uint256 value
+    );
+}
 
-    modifier nonReentrant() {
-        require(_notEntered, "ReentrancyGuard: reentrant call");
-        _notEntered = false;
-        _;
-        _notEntered = true;
+interface IERC20Metadata is IERC20 {
+    function name() external view returns (string memory);
+
+    function symbol() external view returns (string memory);
+
+    function decimals() external view returns (uint8);
+}
+
+abstract contract Context {
+    function _msgSender() internal view virtual returns (address) {
+        return msg.sender;
     }
+
+    function _msgData() internal view virtual returns (bytes calldata) {
+        this;
+        return msg.data;
+    }
+}
+
+abstract contract Ownable is Context {
+    address private _owner;
+
+    event OwnershipTransferred(
+        address indexed previousOwner,
+        address indexed newOwner
+    );
 
     constructor() {
-        taxCollector = owner();
-        taxExemptWallet[owner()] = true;
+        address msgSender = _msgSender();
+        _owner = msgSender;
+        emit OwnershipTransferred(address(0), msgSender);
     }
 
-    function mint() external onlyOwner{
-        require(!tokenMinted,"Tokens already minted!");
-        _balances[owner()] = totalSupply;
-        tokenMinted = true;
+    function owner() public view returns (address) {
+        return _owner;
     }
-    function balanceOf(address account) external view override returns (uint256) {
+
+    modifier onlyOwner() {
+        require(_owner == _msgSender(), "Ownable: caller is not the owner");
+        _;
+    }
+
+    function renounceOwnership() public virtual onlyOwner {
+        emit OwnershipTransferred(_owner, address(0));
+        _owner = address(0);
+    }
+
+    function transferOwnership(address newOwner) public virtual onlyOwner {
+        require(
+            newOwner != address(0),
+            "Ownable: new owner is the zero address"
+        );
+        emit OwnershipTransferred(_owner, newOwner);
+        _owner = newOwner;
+    }
+}
+
+contract ERC20 is Context, IERC20, IERC20Metadata {
+    mapping(address => uint256) private _balances;
+
+    mapping(address => mapping(address => uint256)) private _allowances;
+
+    uint256 private _totalSupply;
+
+    string private _name;
+    string private _symbol;
+
+    constructor(string memory name_, string memory symbol_) {
+        _name = name_;
+        _symbol = symbol_;
+    }
+
+    function name() public view virtual override returns (string memory) {
+        return _name;
+    }
+
+    function symbol() public view virtual override returns (string memory) {
+        return _symbol;
+    }
+
+    function decimals() public view virtual override returns (uint8) {
+        return 9;
+    }
+
+    function totalSupply() public view virtual override returns (uint256) {
+        return _totalSupply;
+    }
+
+    function balanceOf(
+        address account
+    ) public view virtual override returns (uint256) {
         return _balances[account];
     }
 
-    function transfer(address recipient, uint256 amount)
-        external
-        override
-        returns (bool)
-    {
-        _transfer(msg.sender, recipient, amount);
+    function transfer(
+        address recipient,
+        uint256 amount
+    ) public virtual override returns (bool) {
+        _transfer(_msgSender(), recipient, amount);
         return true;
     }
 
-    function allowance(address owner, address spender)
-        external
-        view
-        override
-        returns (uint256)
-    {
+    function allowance(
+        address owner,
+        address spender
+    ) public view virtual override returns (uint256) {
         return _allowances[owner][spender];
     }
 
-    function approve(address spender, uint256 amount)
-        external
-        override
-        returns (bool)
-    {
-        _approve(msg.sender, spender, amount);
+    function approve(
+        address spender,
+        uint256 amount
+    ) public virtual override returns (bool) {
+        _approve(_msgSender(), spender, amount);
         return true;
     }
 
@@ -87,194 +173,275 @@ contract Greelance is IERC20, Ownable {
         address sender,
         address recipient,
         uint256 amount
-    ) external override returns (bool) {
+    ) public virtual override returns (bool) {
+        uint256 currentAllowance = _allowances[sender][_msgSender()];
+        if (currentAllowance != type(uint256).max) {
+            require(
+                currentAllowance >= amount,
+                "ERC20: transfer amount exceeds allowance"
+            );
+            unchecked {
+                _approve(sender, _msgSender(), currentAllowance - amount);
+            }
+        }
+
         _transfer(sender, recipient, amount);
-        _approve(
-            sender,
-            msg.sender,
-            _allowances[sender][msg.sender]-amount
-        );
+
         return true;
     }
 
-    function increaseAllowance(address spender, uint256 addedValue)
-        external
-        returns (bool)
-    {
+    function increaseAllowance(
+        address spender,
+        uint256 addedValue
+    ) public virtual returns (bool) {
         _approve(
-            msg.sender,
+            _msgSender(),
             spender,
-            _allowances[msg.sender][spender]+addedValue
+            _allowances[_msgSender()][spender] + addedValue
         );
         return true;
     }
 
-  function decreaseAllowance(address spender, uint256 subtractedValue)
-        external
-        returns (bool)
-    {
-        uint256 currentAllowance = _allowances[msg.sender][spender];
+    function decreaseAllowance(
+        address spender,
+        uint256 subtractedValue
+    ) public virtual returns (bool) {
+        uint256 currentAllowance = _allowances[_msgSender()][spender];
         require(
             currentAllowance >= subtractedValue,
-            "Allowance insufficient"
+            "ERC20: decreased allowance below zero"
         );
-        _approve(
-            msg.sender,
-            spender,
-            currentAllowance-subtractedValue
-        );
+        unchecked {
+            _approve(_msgSender(), spender, currentAllowance - subtractedValue);
+        }
+
         return true;
     }
-
-    function _updateBalances( address sender,address recipient,uint256 amount) internal{
-        _balances[sender] = _balances[sender]-amount;
-        _balances[recipient] = _balances[recipient]+amount;
-        lastTradeTime[sender] = block.timestamp;
-    }
-
 
     function _transfer(
         address sender,
         address recipient,
         uint256 amount
-    ) internal nonReentrant {
-        require(!isTradingPaused || taxExemptWallet[sender] || taxExemptWallet[recipient], "Trading is paused");
-        require(sender != address(0), "Transfer from the zero address");
-        require(recipient != address(0), "Transfer to the zero address");
-        require(_balances[sender] >= amount, "Insufficient balance");
+    ) internal virtual {
+        require(sender != address(0), "ERC20: transfer from the zero address");
+        require(recipient != address(0), "ERC20: transfer to the zero address");
 
-        uint256 taxRate = sender == uniswapPairAddress ? buyTaxPercentage : sellTaxPercentage;
-        uint256 taxAmount = 0;
-        if (maxSellableRestrictionEnabled){
-            taxAmount = (maxSellableAmount * taxRate) / 100;
-        }
-        else{
-            taxAmount = (amount * taxRate) / 100;
-        }
-        if(taxDeductionEnabled && !taxExemptWallet[sender] && trading24HrsRestrictionEnabled && maxSellableRestrictionEnabled){
-            require(block.timestamp-lastTradeTime[sender] >= 1 days,
-            "Transfer restricted before 24 hours");
-                if(amount > maxSellableAmount){
-                    _updateBalances(sender,recipient,maxSellableAmount-taxAmount);
-                    _updateBalances(sender,taxCollector,taxAmount);
-                }
-                else{
-                     _updateBalances(sender,recipient,amount-taxAmount);
-                    _updateBalances(sender,recipient,taxAmount);
-                }
-        }
-        else if(taxDeductionEnabled && !taxExemptWallet[sender] && trading24HrsRestrictionEnabled && !maxSellableRestrictionEnabled){
-            require(block.timestamp-lastTradeTime[sender] >= 1 days,
-            "Transfer restricted before 24 hours");
-            _updateBalances(sender,recipient,amount-taxAmount);
-            _updateBalances(sender,recipient,taxAmount);
-        }
-        else if(taxDeductionEnabled && !taxExemptWallet[sender] && !trading24HrsRestrictionEnabled && maxSellableRestrictionEnabled){
-            if(amount > maxSellableAmount){
-                    _updateBalances(sender,recipient,maxSellableAmount-taxAmount);
-                    _updateBalances(sender,recipient,taxAmount);
-            }
-            else{
-                _updateBalances(sender,recipient,amount-taxAmount);
-                _updateBalances(sender,recipient,taxAmount);
-            }
-        }
-        else if(taxDeductionEnabled && !taxExemptWallet[sender]){
-            _updateBalances(sender,recipient,amount-taxAmount);
-            _updateBalances(sender,recipient,taxAmount);
-        }
-        else if(!trading24HrsRestrictionEnabled && maxSellableRestrictionEnabled){
-            if(amount > maxSellableAmount){
-                    _updateBalances(sender,recipient,maxSellableAmount);
-            }
-            else{
-                _updateBalances(sender,recipient,amount);
-            }
-        }
-        else if(trading24HrsRestrictionEnabled && !maxSellableRestrictionEnabled){
-            require(block.timestamp-lastTradeTime[sender] >= 1 days,
-            "Transfer restricted before 24 hours");
-            _updateBalances(sender,recipient,amount);
-        } 
+        _beforeTokenTransfer(sender, recipient, amount);
 
-        else{
-            _updateBalances(sender,recipient,amount);
+        uint256 senderBalance = _balances[sender];
+        require(
+            senderBalance >= amount,
+            "ERC20: transfer amount exceeds balance"
+        );
+        unchecked {
+            _balances[sender] = senderBalance - amount;
         }
+        _balances[recipient] += amount;
+
         emit Transfer(sender, recipient, amount);
+
+        _afterTokenTransfer(sender, recipient, amount);
+    }
+
+    function _mint(address account, uint256 amount) internal virtual {
+        require(account != address(0), "ERC20: mint to the zero address");
+
+        _beforeTokenTransfer(address(0), account, amount);
+
+        _totalSupply += amount;
+        _balances[account] += amount;
+        emit Transfer(address(0), account, amount);
+
+        _afterTokenTransfer(address(0), account, amount);
+    }
+
+    function _burn(address account, uint256 amount) internal virtual {
+        require(account != address(0), "ERC20: burn from the zero address");
+
+        _beforeTokenTransfer(account, address(0), amount);
+
+        uint256 accountBalance = _balances[account];
+        require(accountBalance >= amount, "ERC20: burn amount exceeds balance");
+        unchecked {
+            _balances[account] = accountBalance - amount;
+        }
+        _totalSupply -= amount;
+
+        emit Transfer(account, address(0), amount);
+
+        _afterTokenTransfer(account, address(0), amount);
     }
 
     function _approve(
         address owner,
         address spender,
         uint256 amount
-    ) internal {
-        require(owner != address(0), "Approve from the zero address");
-        require(spender != address(0), "Approve to the zero address");
+    ) internal virtual {
+        require(owner != address(0), "ERC20: approve from the zero address");
+        require(spender != address(0), "ERC20: approve to the zero address");
 
         _allowances[owner][spender] = amount;
         emit Approval(owner, spender, amount);
     }
 
-    // Function to set the maximum sellable amount (only callable by the owner)
+    function _beforeTokenTransfer(
+        address from,
+        address to,
+        uint256 amount
+    ) internal virtual {}
+
+    function _afterTokenTransfer(
+        address from,
+        address to,
+        uint256 amount
+    ) internal virtual {}
+}
+
+contract Greelance is ERC20, Ownable {
+    address public uniswapV2Pair;
+
+    mapping(address => bool) private _isExcludedFromFees;
+
+    uint256 public taxFeeOnBuy;
+    uint256 public taxFeeOnSell;
+
+    address public taxCollector;
+
+    bool public tradingEnabled;
+    bool private tokenMinted = false;
+    uint256 public maxSellableAmount;
+    bool public maxSellableRestrictionEnabled = false;
+    bool public trading24HrsRestrictionEnabled = false;
+    mapping(address => uint256) public tradingIn24Hours;
+    mapping(address => uint256) public lastTradeTime;
+
+    event ExcludeFromFees(address indexed account, bool isExcluded);
+
+    constructor() ERC20("Greelance", "GRL") {
+        taxCollector = owner();
+        _isExcludedFromFees[owner()] = true;
+        _isExcludedFromFees[address(this)] = true;
+    }
+
+    receive() external payable {}
+
+    function mint() external onlyOwner {
+        require(!tokenMinted, "Tokens already minted!");
+        tokenMinted = true;
+        _mint(owner(), 2000000000 * (10 ** decimals()));
+    }
+
     function setMaxSellableAmount(uint256 _maxAmount) external onlyOwner {
-        require(_maxAmount>0,"Invalid amount!");
+        require(_maxAmount > 0, "Invalid amount!");
         maxSellableAmount = _maxAmount;
+        maxSellableRestrictionEnabled = true;
     }
 
-    function setBuyTaxAmount(uint256 _taxAmount) external onlyOwner {
-        require(_taxAmount<=20,"Tax not more than 20!");
-        buyTaxPercentage = _taxAmount;
-    }
-
-     function setSellTaxAmount(uint256 _taxAmount) external onlyOwner {
-        require(_taxAmount<=20,"Tax not more than 20!");
-        sellTaxPercentage = _taxAmount;
-    }
-
-    // Function to enable tax deduction (only callable by the owner)
-    function enableTaxDeduction() external onlyOwner {
-        taxDeductionEnabled = true;
-    }
-
-    // Function to disable tax deduction (only callable by the owner)
-    function removeTaxDeduction() external onlyOwner {
-        taxDeductionEnabled = false;
-    }
-
-    // Function to exclude a wallet from tax (only callable by the owner)
-    function excludeFromTax(address account) external onlyOwner {
-        require(account != address(0), "Address can't be zero address");
-        taxExemptWallet[account] = true;
-    } 
-
-     // Function to include a wallet in tax (only callable by the owner)
-    function includeForTax(address account) external onlyOwner {
-        require(account != address(0), "Address can't be zero address");
-        taxExemptWallet[account] = false;
-    } 
-
-    // Function to disable maximum sellable amount restriction (only callable by the owner)
     function removeMaxSellableRestriction() external onlyOwner {
         maxSellableRestrictionEnabled = false;
     }
 
-    // Function to enable the 24-hour trading restriction (only callable by the owner)
+    function excludeFromFees(address account) external onlyOwner {
+        require(
+            !_isExcludedFromFees[account],
+            "Account already excluded"
+        );
+        _isExcludedFromFees[account] = true;
+
+        emit ExcludeFromFees(account, true);
+    }
+
     function enable24HrsRestriction() external onlyOwner {
         trading24HrsRestrictionEnabled = true;
     }
 
-    // Function to disable the 24-hour trading restriction (only callable by the owner)
     function disable24HrsRestriction() external onlyOwner {
         trading24HrsRestrictionEnabled = false;
     }
 
-    // Function to start or pause trading (only callable by the owner)
-    function startTrading() external onlyOwner {
-        isTradingPaused = false;
+    function setUniswapPair(address _uniswapV2Pair) external onlyOwner {
+        uniswapV2Pair = _uniswapV2Pair;
     }
 
-    function setUniswapPairAddress(address _pair) external onlyOwner {
-         require(_pair != address(0), "Pair Address can't be zero address");
-        uniswapPairAddress = _pair;
+    function isExcludedFromFees(address account) public view returns (bool) {
+        return _isExcludedFromFees[account];
+    }
+
+    function setBuyTaxPercentage(uint256 _taxAmount) external onlyOwner {
+        require(_taxAmount <= 20, "Tax not more than 20!");
+        taxFeeOnBuy = _taxAmount;
+    }
+
+    function setSellTaxPercentage(uint256 _taxAmount) external onlyOwner {
+        require(_taxAmount <= 20, "Tax not more than 20!");
+        taxFeeOnSell = _taxAmount;
+    }
+
+    function enableTrading() external onlyOwner {
+        require(!tradingEnabled, "Trading already enabled.");
+        tradingEnabled = true;
+    }
+
+    function _transfer(
+        address from,
+        address to,
+        uint256 amount
+    ) internal override {
+        require(from != address(0), "ERC20: transfer from the zero address");
+        require(to != address(0), "ERC20: transfer to the zero address");
+        require(tradingEnabled || _isExcludedFromFees[from] || _isExcludedFromFees[to], "Trading not yet enabled!");
+
+        if (amount == 0) {
+            super._transfer(from, to, 0);
+            lastTradeTime[from] = block.timestamp;
+            return;
+        }
+
+        bool shouldApplyFees = !(_isExcludedFromFees[from] ||
+            _isExcludedFromFees[to]);
+        uint256 fees = shouldApplyFees
+            ? (amount * (from == uniswapV2Pair ? taxFeeOnBuy : taxFeeOnSell)) /
+                100
+            : 0;
+
+        if (shouldApplyFees) {
+            if (from != uniswapV2Pair) {
+
+                if (maxSellableRestrictionEnabled) {
+                    require(
+                        amount <= maxSellableAmount,
+                        "Amount is greater than MaxSellableAmount"
+                    );
+                }
+
+                if (trading24HrsRestrictionEnabled) {
+                    if (
+                        maxSellableRestrictionEnabled &&
+                        block.timestamp - lastTradeTime[from] >= 1 days
+                    ) {
+                        tradingIn24Hours[from] = 0;
+                    } else if (
+                        tradingIn24Hours[from] + amount > maxSellableAmount
+                    ) {
+                        require(
+                            block.timestamp - lastTradeTime[from] >= 1 days,
+                            "Transfer restricted before 24 hours"
+                        );
+                    }
+
+                    if (maxSellableRestrictionEnabled) {
+                        tradingIn24Hours[from] += amount;
+                    }
+                }
+            }
+        }
+
+        if (fees > 0) {
+            super._transfer(from, taxCollector, fees);
+            amount -= fees;
+        }
+
+        super._transfer(from, to, amount);
+        lastTradeTime[from] = block.timestamp;
     }
 }
