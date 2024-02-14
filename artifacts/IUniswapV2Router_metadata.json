@@ -1,0 +1,70 @@
+{
+	"compiler": {
+		"version": "0.8.24+commit.e11b9ed9"
+	},
+	"language": "Solidity",
+	"output": {
+		"abi": [
+			{
+				"inputs": [
+					{
+						"internalType": "uint256",
+						"name": "amountIn",
+						"type": "uint256"
+					},
+					{
+						"internalType": "address[]",
+						"name": "path",
+						"type": "address[]"
+					}
+				],
+				"name": "getAmountsOut",
+				"outputs": [
+					{
+						"internalType": "uint256[]",
+						"name": "amounts",
+						"type": "uint256[]"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			}
+		],
+		"devdoc": {
+			"kind": "dev",
+			"methods": {},
+			"version": 1
+		},
+		"userdoc": {
+			"kind": "user",
+			"methods": {},
+			"version": 1
+		}
+	},
+	"settings": {
+		"compilationTarget": {
+			"contracts\\PriceGuranteeStaking.sol": "IUniswapV2Router"
+		},
+		"evmVersion": "shanghai",
+		"libraries": {},
+		"metadata": {
+			"bytecodeHash": "ipfs"
+		},
+		"optimizer": {
+			"enabled": false,
+			"runs": 200
+		},
+		"remappings": []
+	},
+	"sources": {
+		"contracts\\PriceGuranteeStaking.sol": {
+			"keccak256": "0x68a43944edec8f9b5a9e941dfefcddecadbb1b58eee2ae3853e907483d2169bc",
+			"license": "MIT",
+			"urls": [
+				"bzz-raw://7ddf70a2fd1cdb873aa7b522024dbd2f79aabbe5d3c909e6a9abece392be8945",
+				"dweb:/ipfs/QmTF6opTEmcuEo6F6JXo1QHGzgaKyWoT9qu3Zj8freG14Y"
+			]
+		}
+	},
+	"version": 1
+}

@@ -1,0 +1,69 @@
+{
+	"compiler": {
+		"version": "0.8.19+commit.7dd6d404"
+	},
+	"language": "Solidity",
+	"output": {
+		"abi": [
+			{
+				"inputs": [],
+				"name": "getReserves",
+				"outputs": [
+					{
+						"internalType": "uint112",
+						"name": "reserve0",
+						"type": "uint112"
+					},
+					{
+						"internalType": "uint112",
+						"name": "reserve1",
+						"type": "uint112"
+					},
+					{
+						"internalType": "uint32",
+						"name": "blockTimestampLast",
+						"type": "uint32"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			}
+		],
+		"devdoc": {
+			"kind": "dev",
+			"methods": {},
+			"version": 1
+		},
+		"userdoc": {
+			"kind": "user",
+			"methods": {},
+			"version": 1
+		}
+	},
+	"settings": {
+		"compilationTarget": {
+			"contracts\\PriceGuranteeStaking.sol": "IUniswapV2Pair"
+		},
+		"evmVersion": "paris",
+		"libraries": {},
+		"metadata": {
+			"bytecodeHash": "ipfs"
+		},
+		"optimizer": {
+			"enabled": false,
+			"runs": 200
+		},
+		"remappings": []
+	},
+	"sources": {
+		"contracts\\PriceGuranteeStaking.sol": {
+			"keccak256": "0xbb3c4e1c853dd8e2f43222f9a280a5b62912c683df10388b4b7d7c0978e50af7",
+			"license": "MIT",
+			"urls": [
+				"bzz-raw://b8f7d64d3a7b909247e8d9e9a0519239b68e7f7d960fb82a497f124250358961",
+				"dweb:/ipfs/QmV8XExxDFNL5AqMfz4qanzuDWU15mLpjQdPUHdSQtQ9r1"
+			]
+		}
+	},
+	"version": 1
+}
