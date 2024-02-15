@@ -178,71 +178,6 @@
 				"type": "function"
 			},
 			{
-				"inputs": [
-					{
-						"internalType": "address",
-						"name": "user",
-						"type": "address"
-					},
-					{
-						"internalType": "uint256",
-						"name": "durationInDays",
-						"type": "uint256"
-					}
-				],
-				"name": "getUserStakes",
-				"outputs": [
-					{
-						"components": [
-							{
-								"internalType": "uint256",
-								"name": "amount",
-								"type": "uint256"
-							},
-							{
-								"internalType": "uint256",
-								"name": "duration",
-								"type": "uint256"
-							},
-							{
-								"internalType": "uint256",
-								"name": "priceInUsd",
-								"type": "uint256"
-							},
-							{
-								"internalType": "uint256",
-								"name": "amountInUsd",
-								"type": "uint256"
-							}
-						],
-						"internalType": "struct StakingContract.Stake[]",
-						"name": "",
-						"type": "tuple[]"
-					}
-				],
-				"stateMutability": "view",
-				"type": "function"
-			},
-			{
-				"inputs": [
-					{
-						"internalType": "address",
-						"name": "user",
-						"type": "address"
-					}
-				],
-				"name": "getUserStakingDurations",
-				"outputs": [
-					{
-						"internalType": "uint256[]",
-						"name": "",
-						"type": "uint256[]"
-					}
-				],
-				"stateMutability": "view",
-				"type": "function"
-			},
-			{
 				"inputs": [],
 				"name": "grlTokenAddress",
 				"outputs": [
@@ -290,7 +225,7 @@
 				"inputs": [
 					{
 						"internalType": "uint256",
-						"name": "durationInDays",
+						"name": "index",
 						"type": "uint256"
 					}
 				],
@@ -310,15 +245,15 @@
 						"internalType": "uint256",
 						"name": "",
 						"type": "uint256"
-					},
-					{
-						"internalType": "uint256",
-						"name": "",
-						"type": "uint256"
 					}
 				],
 				"name": "userStakes",
 				"outputs": [
+					{
+						"internalType": "uint256",
+						"name": "durationInDays",
+						"type": "uint256"
+					},
 					{
 						"internalType": "uint256",
 						"name": "amount",
@@ -326,7 +261,7 @@
 					},
 					{
 						"internalType": "uint256",
-						"name": "duration",
+						"name": "timestamp",
 						"type": "uint256"
 					},
 					{
@@ -385,11 +320,11 @@
 	},
 	"sources": {
 		"contracts\\PriceGuranteeStaking.sol": {
-			"keccak256": "0x68a43944edec8f9b5a9e941dfefcddecadbb1b58eee2ae3853e907483d2169bc",
+			"keccak256": "0x783275916c9361f27c5ca705342f336d2a6edf951d24a054b91ba8f1a09dd429",
 			"license": "MIT",
 			"urls": [
-				"bzz-raw://7ddf70a2fd1cdb873aa7b522024dbd2f79aabbe5d3c909e6a9abece392be8945",
-				"dweb:/ipfs/QmTF6opTEmcuEo6F6JXo1QHGzgaKyWoT9qu3Zj8freG14Y"
+				"bzz-raw://f2ad90259a79b6a674ad81e05fb8dd21520796be16774c2aaba2d591aa02056b",
+				"dweb:/ipfs/QmSLghc4SPhZmY9Dh6yCu5CyfX4etAdW2GFZRmT3F3ABq8"
 			]
 		}
 	},

@@ -1,13 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-interface IUniswapV2Router {
-    function getAmountsOut(
-        uint amountIn,
-        address[] memory path
-    ) external view returns (uint[] memory amounts);
-}
-
 interface IERC20 {
     function balanceOf(address account) external view returns (uint256);
 
@@ -23,20 +16,17 @@ interface IERC20 {
         address recipient,
         uint256 amount
     ) external returns (bool);
+}
 
+interface IUniswapV2Router {
+    function getAmountsOut(
+        uint amountIn,
+        address[] memory path
+    ) external view returns (uint[] memory amounts);
 }
 
 interface AggregatorInterface {
-    function latestRoundData()
-    external
-    view
-    returns (
-      uint80 roundId,
-      int256 answer,
-      uint256 startedAt,
-      uint256 updatedAt,
-      uint80 answeredInRound
-    );
+    function latestAnswer() external view returns (int256);
 }
 
 contract StakingContract {
@@ -48,13 +38,14 @@ contract StakingContract {
     uint256 public constant DECIMALS = 18;
 
     struct Stake {
+        uint256 durationInDays;
         uint256 amount;
-        uint256 duration;
+        uint256 timestamp;
         uint256 priceInUsd; // Price of GRL in USD at the time of staking
         uint256 amountInUsd; // USD value of the staked amount
     }
-    
-    mapping(address => mapping(uint256 => Stake[])) public userStakes;
+
+    mapping(address => Stake[]) public userStakes;
 
     constructor(
         address _grlTokenAddress,
@@ -73,7 +64,7 @@ contract StakingContract {
         AggregatorInterface ethUsdAggregator = AggregatorInterface(
             ethUsdAggregatorAddress
         );
-        (,int256 ethUsdPrice,,,) = ethUsdAggregator.latestRoundData();
+        int256 ethUsdPrice = ethUsdAggregator.latestAnswer();
         require(ethUsdPrice > 0, "Invalid ETH/USD price");
 
         return uint256(ethUsdPrice);
@@ -87,7 +78,7 @@ contract StakingContract {
         IUniswapV2Router router = IUniswapV2Router(uniswapRouterAddress);
         uint[] memory amounts = router.getAmountsOut(1e9, path); // 1 GRL with 9 decimals
 
-        return amounts[1]; // Amount of WETH in 18 decimals
+        return amounts[1]; // Amount of WETH
     }
 
     function calculatePriceOfGrlInUsd() public view returns (uint256) {
@@ -99,31 +90,33 @@ contract StakingContract {
 
     function stake(uint256 amount, uint256 durationInDays) external {
         require(amount > 0, "Invalid amount");
-        require(durationInDays % 30 == 0, "Invalid duration");
+        require(durationInDays > 0, "Invalid duration");
 
         uint256 grlUsdPrice = calculatePriceOfGrlInUsd();
         uint256 stakingFee = calculateStakingFee(durationInDays, amount);
-        uint256 amountInUsd = ((amount - stakingFee) * grlUsdPrice) / (10 ** DECIMALS);
+        uint256 amountInUsd = (amount * grlUsdPrice) / (10 ** DECIMALS);
 
         // Transfer GRL tokens from user to contract
         // Assuming ERC20 transfer function exists
-        IERC20(grlTokenAddress).transferFrom(msg.sender, address(this), amount);
+        // grlToken.transferFrom(msg.sender, address(this), amount);
 
         // Calculate timestamp for staking duration
         uint256 stakingEndTime = block.timestamp + (durationInDays * 1 days);
 
         // Record stake details
-        userStakes[msg.sender][durationInDays].push(
+        userStakes[msg.sender].push(
             Stake({
+                durationInDays: durationInDays,
                 amount: amount,
-                duration: stakingEndTime,
+                timestamp: stakingEndTime,
                 priceInUsd: grlUsdPrice,
                 amountInUsd: amountInUsd
             })
         );
 
         // Transfer staking fee to admin
-        IERC20(grlTokenAddress).transfer(admin, stakingFee);
+        // Assuming ERC20 transfer function exists
+        // grlToken.transfer(admin, stakingFee);
 
         // Emit event
         emit Staked(
@@ -137,37 +130,31 @@ contract StakingContract {
         );
     }
 
-    function unstake(uint256 durationInDays) external {
-        require(durationInDays > 0, "Invalid duration");
+    function unstake(uint256 index) external {
+        Stake[] storage stakes = userStakes[msg.sender];
+        require(index < stakes.length, "Invalid index");
 
-        Stake[] storage stakes = userStakes[msg.sender][durationInDays];
-        require(stakes.length > 0, "No stakes found for the given duration");
+        Stake storage stakeOfUser = stakes[index];
 
+        uint256 totalAmountToReturn = stakeOfUser.amount;
         uint256 grlUsdPrice = calculatePriceOfGrlInUsd();
-        uint256 currentGrlUsdPrice = stakes[stakes.length - 1].priceInUsd;
-
-        uint256 amountToReturn = 0;
-        uint256 usdDifference = currentGrlUsdPrice - grlUsdPrice;
-
-        for (uint256 i = 0; i < stakes.length; i++) {
-            if (block.timestamp >= stakes[i].duration) {
-                amountToReturn += stakes[i].amount;
-                stakes[i].amount = 0;
-            }
-        }
+        uint256 usdDifference = stakeOfUser.priceInUsd - grlUsdPrice;
 
         if (usdDifference > 0) {
             // Calculate additional GRL to return
             uint256 additionalGrlToReturn = (usdDifference * (10 ** DECIMALS)) /
-                currentGrlUsdPrice;
-            amountToReturn += additionalGrlToReturn;
+                stakeOfUser.priceInUsd;
+            totalAmountToReturn += additionalGrlToReturn;
         }
+
+        // Delete the stake from the array
+        delete stakes[index];
 
         // Transfer GRL tokens back to the user
         // Assuming ERC20 transfer function exists
-        // grlToken.transfer(msg.sender, amountToReturn);
+        // grlToken.transfer(msg.sender, totalAmountToReturn);
 
-        emit Unstaked(msg.sender, amountToReturn);
+        emit Unstaked(msg.sender, totalAmountToReturn);
     }
 
     function calculateStakingFee(
@@ -178,7 +165,9 @@ contract StakingContract {
         return (amount * feePercentage) / 10000; // feePercentage is in basis points
     }
 
-    function getStakingFeePercentage(uint256 durationInDays) internal pure returns (uint256) {
+    function getStakingFeePercentage(
+        uint256 durationInDays
+    ) internal pure returns (uint256) {
         require(durationInDays % 30 == 0, "Invalid duration");
 
         if (durationInDays == 30) return 3750; // 3.7500%
@@ -196,25 +185,6 @@ contract StakingContract {
 
         revert("Invalid duration");
     }
-
-    function getUserStakes(address user, uint256 durationInDays ) external view returns (Stake[] memory) {
-        return userStakes[user][durationInDays];
-    }
-
-    function getUserStakingDurations(address user) external view returns (uint256[] memory) {
-        uint256[] memory durations = new uint256[](12); // Maximum 12 possible durations (30, 60, ..., 360)
-        uint256 index = 0;
-        for (uint256 i = 30; i <= 360; i += 30) {
-            if (userStakes[user][i].length > 0) {
-                durations[index] = i;
-                index++;
-            }
-        }
-        // Trim the array to remove unused slots
-        assembly { mstore(durations, index) }
-        return durations;
-}
-
 
     event Staked(
         address indexed user,
