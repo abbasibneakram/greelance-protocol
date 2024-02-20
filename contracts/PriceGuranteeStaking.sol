@@ -1,23 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-interface IERC20 {
-    function balanceOf(address account) external view returns (uint256);
-
-    function transfer(
-        address recipient,
-        uint256 amount
-    ) external returns (bool);
-
-    function approve(address spender, uint256 amount) external returns (bool);
-
-    function transferFrom(
-        address sender,
-        address recipient,
-        uint256 amount
-    ) external returns (bool);
-}
-
 interface IUniswapV2Router {
     function getAmountsOut(
         uint amountIn,
@@ -36,6 +19,8 @@ contract StakingContract {
     address public uniswapRouterAddress;
     address public ethUsdAggregatorAddress;
     uint256 public constant DECIMALS = 18;
+
+    mapping(uint256 => uint256) public stakingFeePercentage; // Mapping for staking fee percentage against duration in days
 
     struct Stake {
         uint256 durationInDays;
@@ -58,6 +43,20 @@ contract StakingContract {
         wethAddress = _wethAddress;
         uniswapRouterAddress = _uniswapRouterAddress;
         ethUsdAggregatorAddress = _ethUsdAggregatorAddress;
+
+        // Initialize default staking fee percentages
+        stakingFeePercentage[30] = 3750; // 3.7500%
+        stakingFeePercentage[60] = 5625; // 5.6250%
+        stakingFeePercentage[90] = 7734; // 7.7344%
+        // Add more default values as needed
+    }
+
+    function setStakingFeePercentage(
+        uint256 durationInDays,
+        uint256 feePercentage
+    ) external onlyAdmin {
+        require(durationInDays % 30 == 0, "Invalid duration");
+        stakingFeePercentage[durationInDays] = feePercentage;
     }
 
     function getEthToUsdValue() public view returns (uint256) {
@@ -134,21 +133,18 @@ contract StakingContract {
         Stake[] storage stakes = userStakes[msg.sender];
         require(index < stakes.length, "Invalid index");
 
-        Stake storage stakeOfUser = stakes[index];
+        Stake storage userStake = stakes[index];
 
-        uint256 totalAmountToReturn = stakeOfUser.amount;
+        uint256 totalAmountToReturn = userStake.amount;
         uint256 grlUsdPrice = calculatePriceOfGrlInUsd();
-        uint256 usdDifference = stakeOfUser.priceInUsd - grlUsdPrice;
+        uint256 usdDifference = userStake.priceInUsd - grlUsdPrice;
 
         if (usdDifference > 0) {
             // Calculate additional GRL to return
             uint256 additionalGrlToReturn = (usdDifference * (10 ** DECIMALS)) /
-                stakeOfUser.priceInUsd;
+                userStake.priceInUsd;
             totalAmountToReturn += additionalGrlToReturn;
         }
-
-        // Delete the stake from the array
-        delete stakes[index];
 
         // Transfer GRL tokens back to the user
         // Assuming ERC20 transfer function exists
@@ -157,33 +153,22 @@ contract StakingContract {
         emit Unstaked(msg.sender, totalAmountToReturn);
     }
 
+    function getUserStakeCount(address user) external view returns (uint256) {
+        return userStakes[user].length;
+    }
+
     function calculateStakingFee(
         uint256 durationInDays,
         uint256 amount
-    ) internal pure returns (uint256) {
-        uint256 feePercentage = getStakingFeePercentage(durationInDays);
+    ) internal view returns (uint256) {
+        uint256 feePercentage = stakingFeePercentage[durationInDays];
+        require(feePercentage > 0, "Fee percentage not set for this duration");
         return (amount * feePercentage) / 10000; // feePercentage is in basis points
     }
 
-    function getStakingFeePercentage(
-        uint256 durationInDays
-    ) internal pure returns (uint256) {
-        require(durationInDays % 30 == 0, "Invalid duration");
-
-        if (durationInDays == 30) return 3750; // 3.7500%
-        if (durationInDays == 60) return 5625; // 5.6250%
-        if (durationInDays == 90) return 7734; // 7.7344%
-        if (durationInDays == 120) return 9909; // 9.9097%
-        if (durationInDays == 150) return 12000; // 12.0000%
-        if (durationInDays == 180) return 13898; // 13.8984%
-        if (durationInDays == 210) return 15547; // 15.5475%
-        if (durationInDays == 240) return 16931; // 16.9311%
-        if (durationInDays == 270) return 18061; // 18.0611%
-        if (durationInDays == 300) return 18965; // 18.9652%
-        if (durationInDays == 330) return 19677; // 19.6771%
-        if (durationInDays == 360) return 20231; // 20.2312%
-
-        revert("Invalid duration");
+    modifier onlyAdmin() {
+        require(msg.sender == admin, "Only admin can call this function");
+        _;
     }
 
     event Staked(

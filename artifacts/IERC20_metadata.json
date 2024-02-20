@@ -130,11 +130,11 @@
 	},
 	"sources": {
 		"contracts\\PriceGuranteeStaking.sol": {
-			"keccak256": "0x68a43944edec8f9b5a9e941dfefcddecadbb1b58eee2ae3853e907483d2169bc",
+			"keccak256": "0x35e8bdf50616bfa20d07452d2d8d5d1c05694e0a55f296702c836fbf9c88a8ba",
 			"license": "MIT",
 			"urls": [
-				"bzz-raw://7ddf70a2fd1cdb873aa7b522024dbd2f79aabbe5d3c909e6a9abece392be8945",
-				"dweb:/ipfs/QmTF6opTEmcuEo6F6JXo1QHGzgaKyWoT9qu3Zj8freG14Y"
+				"bzz-raw://e385f13b639bd16254a33b52aba04925a44abe128d2f56c807188f5fece1296a",
+				"dweb:/ipfs/QmP6V3VGP6j8275yZ1njF6CNczvwEt35kUfc83GKfntbBd"
 			]
 		}
 	},
