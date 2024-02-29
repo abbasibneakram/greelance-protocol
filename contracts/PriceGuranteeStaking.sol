@@ -1,5 +1,23 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.0;
+
+pragma solidity 0.8.20;
+
+interface IERC20 {
+    function balanceOf(address account) external view returns (uint256);
+
+    function transfer(
+        address recipient,
+        uint256 amount
+    ) external returns (bool);
+
+    function approve(address spender, uint256 amount) external returns (bool);
+
+    function transferFrom(
+        address sender,
+        address recipient,
+        uint256 amount
+    ) external returns (bool);
+}
 
 interface IUniswapV2Router {
     function getAmountsOut(
@@ -87,17 +105,16 @@ contract StakingContract {
         return (grlEthPrice * ethUsdPrice) / (10 ** DECIMALS);
     }
 
-    function stake(uint256 amount, uint256 durationInDays) external {
+    function stakeGrl(uint256 amount, uint256 durationInDays) external {
         require(amount > 0, "Invalid amount");
         require(durationInDays > 0, "Invalid duration");
 
         uint256 grlUsdPrice = calculatePriceOfGrlInUsd();
         uint256 stakingFee = calculateStakingFee(durationInDays, amount);
-        uint256 amountInUsd = (amount * grlUsdPrice) / (10 ** DECIMALS);
+        uint256 amountToStake = amount - stakingFee;
+        uint256 amountInUsd = (amountToStake * grlUsdPrice) / (10 ** DECIMALS);
 
-        // Transfer GRL tokens from user to contract
-        // Assuming ERC20 transfer function exists
-        // grlToken.transferFrom(msg.sender, address(this), amount);
+        IERC20(grlTokenAddress).transferFrom(msg.sender, address(this), amount);
 
         // Calculate timestamp for staking duration
         uint256 stakingEndTime = block.timestamp + (durationInDays * 1 days);
@@ -106,7 +123,7 @@ contract StakingContract {
         userStakes[msg.sender].push(
             Stake({
                 durationInDays: durationInDays,
-                amount: amount,
+                amount: amountToStake,
                 timestamp: stakingEndTime,
                 priceInUsd: grlUsdPrice,
                 amountInUsd: amountInUsd
@@ -115,7 +132,7 @@ contract StakingContract {
 
         // Transfer staking fee to admin
         // Assuming ERC20 transfer function exists
-        // grlToken.transfer(admin, stakingFee);
+        IERC20(grlTokenAddress).transfer(admin, stakingFee);
 
         // Emit event
         emit Staked(
@@ -135,26 +152,59 @@ contract StakingContract {
 
         Stake storage userStake = stakes[index];
 
-        uint256 totalAmountToReturn = userStake.amount;
-        uint256 grlUsdPrice = calculatePriceOfGrlInUsd();
-        uint256 usdDifference = userStake.priceInUsd - grlUsdPrice;
+        if (block.timestamp < userStake.timestamp) {
+            // Staking duration has not passed yet
+            // Transfer only staked amount back to the user
+            // Assuming ERC20 transfer function exists
+            // grlToken.transfer(msg.sender, stake.amount);
+            emit Unstaked(msg.sender, userStake.amount);
+        } else {
+            uint256 totalAmountToReturn = userStake.amount;
+            uint256 grlUsdPrice = calculatePriceOfGrlInUsd();
+            uint256 usdDifference = userStake.priceInUsd - grlUsdPrice;
 
-        if (usdDifference > 0) {
-            // Calculate additional GRL to return
-            uint256 additionalGrlToReturn = (usdDifference * (10 ** DECIMALS)) /
-                userStake.priceInUsd;
-            totalAmountToReturn += additionalGrlToReturn;
+            if (usdDifference > 0) {
+                // Calculate additional GRL to return
+                uint256 additionalGrlToReturn = (usdDifference *
+                    (10 ** DECIMALS)) / userStake.priceInUsd;
+                totalAmountToReturn += additionalGrlToReturn;
+            }
+
+            // Transfer GRL tokens back to the user
+            // Assuming ERC20 transfer function exists
+            // grlToken.transfer(msg.sender, totalAmountToReturn);
+
+            emit Unstaked(msg.sender, totalAmountToReturn);
         }
-
-        // Transfer GRL tokens back to the user
-        // Assuming ERC20 transfer function exists
-        // grlToken.transfer(msg.sender, totalAmountToReturn);
-
-        emit Unstaked(msg.sender, totalAmountToReturn);
     }
 
     function getUserStakeCount(address user) external view returns (uint256) {
         return userStakes[user].length;
+    }
+
+    function getUserStakeDetails(
+        address user,
+        uint256 index
+    )
+        external
+        view
+        returns (
+            uint256 durationInDays,
+            uint256 amount,
+            uint256 timestamp,
+            uint256 priceInUsd,
+            uint256 amountInUsd
+        )
+    {
+        require(index < userStakes[user].length, "Invalid index");
+        Stake storage stake = userStakes[user][index];
+        return (
+            stake.durationInDays,
+            stake.amount,
+            stake.timestamp,
+            stake.priceInUsd,
+            stake.amountInUsd
+        );
     }
 
     function calculateStakingFee(

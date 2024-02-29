@@ -1,6 +1,6 @@
 {
 	"compiler": {
-		"version": "0.8.24+commit.e11b9ed9"
+		"version": "0.8.20+commit.a1b79de6"
 	},
 	"language": "Solidity",
 	"output": {
@@ -58,11 +58,11 @@
 	},
 	"sources": {
 		"contracts\\PriceGuranteeStaking.sol": {
-			"keccak256": "0x3100f4fbdafa0c6df18e4b2972f8594431242a077c92b8c0097802ca39ab6856",
+			"keccak256": "0x65616151677a63de95cf3722f1ba3217219650055349b1f9fd2dca795cb89611",
 			"license": "MIT",
 			"urls": [
-				"bzz-raw://7b4c0706ba850f21bff2a038572b9f831e0c7595dce3ec911d36fd79345a98d7",
-				"dweb:/ipfs/QmaSDZv1DrKrvr1LesVZX8fspSYNbZRqM6Tr327jaFckFh"
+				"bzz-raw://fb1ae0dc83eb4dcf7dad34bf402cffc6b1e41cb43093a9d265bfbec953a18042",
+				"dweb:/ipfs/QmQJQqQUjPHKQp9pKPM2ypYf9upd4vfeGhgbgyZiWxYZaq"
 			]
 		}
 	},
