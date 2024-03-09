@@ -51,6 +51,8 @@ contract PriceGuaranteeStaking {
     address public ethUsdAggregatorAddress;
     uint256 public constant DECIMALS = 18;
 
+    uint256 public totalStakedGrl;
+
     mapping(uint256 => uint256) public stakingFeePercentage; // Mapping for staking fee percentage against duration in days
 
     struct Stake {
@@ -176,6 +178,8 @@ contract PriceGuaranteeStaking {
         // Assuming ERC20 transfer function exists
         IERC20(grlTokenAddress).transferFrom(msg.sender, admin, stakingFee);
 
+        // Update total staked GRL
+        totalStakedGrl += amountToStake;
         // Emit event
         emit Staked(
             msg.sender,
@@ -219,6 +223,9 @@ contract PriceGuaranteeStaking {
             hasUnstaked[msg.sender][index] = true;
             emit Unstaked(msg.sender, stake.amount);
         }
+
+        // Update total staked GRL
+        totalStakedGrl -= stake.amount;
     }
 
     function getUserStakeCount(address user) external view returns (uint256) {
@@ -258,4 +265,27 @@ contract PriceGuaranteeStaking {
         require(feePercentage > 0, "Fee percentage not set for this duration");
         return (amount * feePercentage) / 10000000; // feePercentage is in basis points
     }
+
+    function withdrawGrl() external onlyAdmin {
+        uint256 totalBalance = IERC20(grlTokenAddress).balanceOf(address(this));
+        uint256 amountToWithdraw = totalBalance - totalStakedGrl;
+        require(amountToWithdraw > 0, "Insufficient GRL");
+        // Transfer GRL tokens to admin
+        IERC20(grlTokenAddress).transfer(admin, amountToWithdraw);
+        //emit GrlWithdrawn(admin, amount);
+    }
 }
+
+//Constructor Arguments
+
+//// Testnet ////
+//GRL: 0xb8a82D0A617C25Df80624Fb022eDEA9d2cF05171
+//UniswapROuter: 0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D
+//weth: 0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6
+//EACAggregatorProxy: 0xD4a33860578De61DBAbDc8BFdb98FD742fA7028e
+
+//// Mainnet ////
+//GRL: 0xA067237f8016d5e3770CF08b20E343Ab9ee813d5
+//UniswapROuter: 0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D
+//weth: 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2
+//EACAggregatorProxy: 0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419
