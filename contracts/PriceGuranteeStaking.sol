@@ -1,3 +1,7 @@
+/**
+ *Submitted for verification at Etherscan.io on 2024-02-29
+ */
+
 // SPDX-License-Identifier: MIT
 
 pragma solidity 0.8.20;
@@ -22,15 +26,24 @@ interface IERC20 {
 interface IUniswapV2Router {
     function getAmountsOut(
         uint amountIn,
-        address[] memory path
+        address[] calldata path
     ) external view returns (uint[] memory amounts);
 }
 
 interface AggregatorInterface {
-    function latestAnswer() external view returns (int256);
+    function latestRoundData()
+        external
+        view
+        returns (
+            uint80 roundId,
+            int256 answer,
+            uint256 startedAt,
+            uint256 updatedAt,
+            uint80 answeredInRound
+        );
 }
 
-contract StakingContract {
+contract PriceGuaranteeStaking {
     address public admin;
     address public grlTokenAddress;
     address public wethAddress;
@@ -49,6 +62,18 @@ contract StakingContract {
     }
 
     mapping(address => Stake[]) public userStakes;
+    mapping(address => mapping(uint256 => bool)) public hasUnstaked;
+
+    event Staked(
+        address indexed user,
+        uint256 amount,
+        uint256 duration,
+        uint256 endTime,
+        uint256 priceInUsd,
+        uint256 fee,
+        uint256 amountInUsd
+    );
+    event Unstaked(address indexed user, uint256 amount);
 
     constructor(
         address _grlTokenAddress,
@@ -63,10 +88,23 @@ contract StakingContract {
         ethUsdAggregatorAddress = _ethUsdAggregatorAddress;
 
         // Initialize default staking fee percentages
-        stakingFeePercentage[30] = 3750; // 3.7500%
-        stakingFeePercentage[60] = 5625; // 5.6250%
-        stakingFeePercentage[90] = 7734; // 7.7344%
-        // Add more default values as needed
+        stakingFeePercentage[30] = 375000;
+        stakingFeePercentage[60] = 562500;
+        stakingFeePercentage[90] = 773440;
+        stakingFeePercentage[120] = 990970;
+        stakingFeePercentage[150] = 120000;
+        stakingFeePercentage[180] = 138984;
+        stakingFeePercentage[210] = 155475;
+        stakingFeePercentage[240] = 169311;
+        stakingFeePercentage[270] = 180611;
+        stakingFeePercentage[300] = 189652;
+        stakingFeePercentage[330] = 196771;
+        stakingFeePercentage[360] = 202312;
+    }
+
+    modifier onlyAdmin() {
+        require(msg.sender == admin, "Only admin can call this function");
+        _;
     }
 
     function setStakingFeePercentage(
@@ -81,7 +119,7 @@ contract StakingContract {
         AggregatorInterface ethUsdAggregator = AggregatorInterface(
             ethUsdAggregatorAddress
         );
-        int256 ethUsdPrice = ethUsdAggregator.latestAnswer();
+        (, int256 ethUsdPrice, , , ) = ethUsdAggregator.latestRoundData();
         require(ethUsdPrice > 0, "Invalid ETH/USD price");
 
         return uint256(ethUsdPrice);
@@ -95,7 +133,7 @@ contract StakingContract {
         IUniswapV2Router router = IUniswapV2Router(uniswapRouterAddress);
         uint[] memory amounts = router.getAmountsOut(1e9, path); // 1 GRL with 9 decimals
 
-        return amounts[1]; // Amount of WETH
+        return amounts[1]; // Amount of WETH to be divided by 10**18
     }
 
     function calculatePriceOfGrlInUsd() public view returns (uint256) {
@@ -107,18 +145,22 @@ contract StakingContract {
 
     function stakeGrl(uint256 amount, uint256 durationInDays) external {
         require(amount > 0, "Invalid amount");
-        require(durationInDays > 0, "Invalid duration");
+        require(durationInDays % 30 == 0, "Invalid duration");
 
         uint256 grlUsdPrice = calculatePriceOfGrlInUsd();
         uint256 stakingFee = calculateStakingFee(durationInDays, amount);
         uint256 amountToStake = amount - stakingFee;
-        uint256 amountInUsd = (amountToStake * grlUsdPrice) / (10 ** DECIMALS);
+        uint256 amountInUsd = (amountToStake * grlUsdPrice) / (10 ** 9);
 
-        IERC20(grlTokenAddress).transferFrom(msg.sender, address(this), amount);
+        IERC20(grlTokenAddress).transferFrom(
+            msg.sender,
+            address(this),
+            amountToStake
+        );
 
         // Calculate timestamp for staking duration
         uint256 stakingEndTime = block.timestamp + (durationInDays * 1 days);
-
+        // uint256 stakingEndTime = block.timestamp + (durationInDays * 10);
         // Record stake details
         userStakes[msg.sender].push(
             Stake({
@@ -132,7 +174,7 @@ contract StakingContract {
 
         // Transfer staking fee to admin
         // Assuming ERC20 transfer function exists
-        IERC20(grlTokenAddress).transfer(admin, stakingFee);
+        IERC20(grlTokenAddress).transferFrom(msg.sender, admin, stakingFee);
 
         // Emit event
         emit Staked(
@@ -140,41 +182,42 @@ contract StakingContract {
             amount,
             durationInDays,
             stakingEndTime,
-            grlUsdPrice,
+            amountToStake,
             stakingFee,
-            amountInUsd
+            amountToStake
         );
     }
 
     function unstake(uint256 index) external {
+        require(!hasUnstaked[msg.sender][index], "Stake already unstaked");
         Stake[] storage stakes = userStakes[msg.sender];
         require(index < stakes.length, "Invalid index");
 
-        Stake storage userStake = stakes[index];
+        Stake storage stake = stakes[index];
 
-        if (block.timestamp < userStake.timestamp) {
+        if (block.timestamp <= stake.timestamp) {
             // Staking duration has not passed yet
-            // Transfer only staked amount back to the user
-            // Assuming ERC20 transfer function exists
-            // grlToken.transfer(msg.sender, stake.amount);
-            emit Unstaked(msg.sender, userStake.amount);
-        } else {
-            uint256 totalAmountToReturn = userStake.amount;
+            uint256 totalAmountToReturn = stake.amount;
             uint256 grlUsdPrice = calculatePriceOfGrlInUsd();
-            uint256 usdDifference = userStake.priceInUsd - grlUsdPrice;
+            uint256 usdDifference = stake.priceInUsd - grlUsdPrice;
 
             if (usdDifference > 0) {
                 // Calculate additional GRL to return
-                uint256 additionalGrlToReturn = (usdDifference *
-                    (10 ** DECIMALS)) / userStake.priceInUsd;
+                uint256 additionalGrlToReturn = (usdDifference * (10 ** 9)) /
+                    stake.priceInUsd;
                 totalAmountToReturn += additionalGrlToReturn;
             }
 
             // Transfer GRL tokens back to the user
             // Assuming ERC20 transfer function exists
-            // grlToken.transfer(msg.sender, totalAmountToReturn);
-
+            IERC20(grlTokenAddress).transfer(msg.sender, totalAmountToReturn);
+            hasUnstaked[msg.sender][index] = true;
             emit Unstaked(msg.sender, totalAmountToReturn);
+        } else {
+            // Transfer only staked amount back to the user
+            IERC20(grlTokenAddress).transfer(msg.sender, stake.amount);
+            hasUnstaked[msg.sender][index] = true;
+            emit Unstaked(msg.sender, stake.amount);
         }
     }
 
@@ -213,22 +256,6 @@ contract StakingContract {
     ) internal view returns (uint256) {
         uint256 feePercentage = stakingFeePercentage[durationInDays];
         require(feePercentage > 0, "Fee percentage not set for this duration");
-        return (amount * feePercentage) / 10000; // feePercentage is in basis points
+        return (amount * feePercentage) / 10000000; // feePercentage is in basis points
     }
-
-    modifier onlyAdmin() {
-        require(msg.sender == admin, "Only admin can call this function");
-        _;
-    }
-
-    event Staked(
-        address indexed user,
-        uint256 amount,
-        uint256 duration,
-        uint256 endTime,
-        uint256 priceInUsd,
-        uint256 fee,
-        uint256 amountInUsd
-    );
-    event Unstaked(address indexed user, uint256 amount);
 }
