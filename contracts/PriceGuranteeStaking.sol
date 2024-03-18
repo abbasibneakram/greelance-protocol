@@ -161,8 +161,8 @@ contract PriceGuaranteeStaking {
         );
 
         // Calculate timestamp for staking duration
-        uint256 stakingEndTime = block.timestamp + (durationInDays * 1 days);
-        // uint256 stakingEndTime = block.timestamp + (durationInDays * 10);
+        // uint256 stakingEndTime = block.timestamp + (durationInDays * 1 days);
+        uint256 stakingEndTime = block.timestamp + (durationInDays * 10);
         // Record stake details
         userStakes[msg.sender].push(
             Stake({
