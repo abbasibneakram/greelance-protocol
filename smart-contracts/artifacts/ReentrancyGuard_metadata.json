@@ -1,0 +1,45 @@
+{
+	"compiler": {
+		"version": "0.8.20+commit.a1b79de6"
+	},
+	"language": "Solidity",
+	"output": {
+		"abi": [],
+		"devdoc": {
+			"kind": "dev",
+			"methods": {},
+			"version": 1
+		},
+		"userdoc": {
+			"kind": "user",
+			"methods": {},
+			"version": 1
+		}
+	},
+	"settings": {
+		"compilationTarget": {
+			"contracts\\TeamVesting.sol": "ReentrancyGuard"
+		},
+		"evmVersion": "shanghai",
+		"libraries": {},
+		"metadata": {
+			"bytecodeHash": "ipfs"
+		},
+		"optimizer": {
+			"enabled": false,
+			"runs": 200
+		},
+		"remappings": []
+	},
+	"sources": {
+		"contracts\\TeamVesting.sol": {
+			"keccak256": "0xd37974d6d0dda8f4a8deed3c650ffcb71c8d54b364301e5c0e9694f6497ce93a",
+			"license": "MIT",
+			"urls": [
+				"bzz-raw://c9685cd07ffa5e120e37009fbdae15a92c9bcd58a95ae8fc6cebdc2ab83af9b9",
+				"dweb:/ipfs/QmUUdjFAwEGHeGdKTYkeTJpjvba3c62NfspA3X3jfroDHq"
+			]
+		}
+	},
+	"version": 1
+}

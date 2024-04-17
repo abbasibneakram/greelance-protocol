@@ -132,6 +132,7 @@ contract TeamVesting is ReentrancyGuard {
 
             vestingSchedule.released += releasable;
         }
+        
         require(totalReleasable > 0, "NO tokens to claim!");
         grl.transfer(msg.sender, totalReleasable);
     }
