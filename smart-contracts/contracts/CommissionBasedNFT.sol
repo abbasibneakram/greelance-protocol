@@ -631,13 +631,15 @@ abstract contract ERC721Enumerable is ERC721, IERC721Enumerable {
 contract CommissionBasedNFT is ERC721Enumerable, ERC721URIStorage, Ownable {
     constructor() ERC721("Commission Based NFT", "CBN") {}
 
-    function mint(
-        address _user,
-        uint256 _tokenId,
-        string calldata _uri
+    function bulkMint(
+        address[] calldata _users,
+        uint256[] calldata _tokenIds,
+        string[] calldata _uris
     ) external onlyOwner {
-        _safeMint(_user, _tokenId);
-        _setTokenURI(_tokenId, _uri);
+        for (uint i = 0; i < _users.length; i++) {
+            _safeMint(_users[i], _tokenIds[i]);
+            _setTokenURI(_tokenIds[i], _uris[i]);
+        }
     }
 
     // The following functions are overrides required by Solidity.
