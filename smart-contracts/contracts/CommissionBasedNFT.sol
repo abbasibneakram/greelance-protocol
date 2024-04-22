@@ -629,6 +629,7 @@ abstract contract ERC721Enumerable is ERC721, IERC721Enumerable {
 }
 
 contract CommissionBasedNFT is ERC721Enumerable, ERC721URIStorage, Ownable {
+    
     constructor() ERC721("Commission Based NFT", "CBN") {}
 
     function bulkMint(
@@ -636,7 +637,7 @@ contract CommissionBasedNFT is ERC721Enumerable, ERC721URIStorage, Ownable {
         uint256[] calldata _tokenIds,
         string[] calldata _uris
     ) external onlyOwner {
-        for (uint i = 0; i < _users.length; i++) {
+        for (uint8 i = 0; i < _users.length; i++) {
             _safeMint(_users[i], _tokenIds[i]);
             _setTokenURI(_tokenIds[i], _uris[i]);
         }
@@ -664,7 +665,7 @@ contract CommissionBasedNFT is ERC721Enumerable, ERC721URIStorage, Ownable {
         return super.tokenURI(tokenId);
     }
 
-    function supportsInterface(
+    function supportsInterface( 
         bytes4 interfaceId
     ) public view override(ERC721, ERC721Enumerable) returns (bool) {
         return super.supportsInterface(interfaceId);
