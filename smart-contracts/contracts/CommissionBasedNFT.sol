@@ -264,6 +264,34 @@ interface IERC721 is IERC165 {
     function balanceOf(address owner) external view returns (uint256 balance);
 
     function ownerOf(uint256 tokenId) external view returns (address owner);
+
+    function safeTransferFrom(
+        address from,
+        address to,
+        uint256 tokenId,
+        bytes calldata data
+    ) external;
+
+    function safeTransferFrom(
+        address from,
+        address to,
+        uint256 tokenId
+    ) external;
+
+    function transferFrom(address from, address to, uint256 tokenId) external;
+
+    function approve(address to, uint256 tokenId) external;
+
+    function setApprovalForAll(address operator, bool _approved) external;
+
+    function getApproved(
+        uint256 tokenId
+    ) external view returns (address operator);
+
+    function isApprovedForAll(
+        address owner,
+        address operator
+    ) external view returns (bool);
 }
 
 interface IERC721Metadata is IERC721 {
@@ -364,8 +392,106 @@ contract ERC721 is Context, ERC165, IERC721, IERC721Metadata {
         return "";
     }
 
+    function approve(address to, uint256 tokenId) public virtual override {
+        address owner = ERC721.ownerOf(tokenId);
+        require(to != owner, "ERC721: approval to current owner");
+
+        require(
+            _msgSender() == owner || isApprovedForAll(owner, _msgSender()),
+            "ERC721: approve caller is not owner nor approved for all"
+        );
+
+        _approve(to, tokenId);
+    }
+
+    function getApproved(
+        uint256 tokenId
+    ) public view virtual override returns (address) {
+        require(
+            _exists(tokenId),
+            "ERC721: approved query for nonexistent token"
+        );
+
+        return _tokenApprovals[tokenId];
+    }
+
+    function setApprovalForAll(
+        address operator,
+        bool approved
+    ) public virtual override {
+        _setApprovalForAll(_msgSender(), operator, approved);
+    }
+
+    function isApprovedForAll(
+        address owner,
+        address operator
+    ) public view virtual override returns (bool) {
+        return _operatorApprovals[owner][operator];
+    }
+
+    function transferFrom(
+        address from,
+        address to,
+        uint256 tokenId
+    ) public virtual override {
+        require(
+            _isApprovedOrOwner(_msgSender(), tokenId),
+            "ERC721: transfer caller is not owner nor approved"
+        );
+
+        _transfer(from, to, tokenId);
+    }
+
+    function safeTransferFrom(
+        address from,
+        address to,
+        uint256 tokenId
+    ) public virtual override {
+        safeTransferFrom(from, to, tokenId, "");
+    }
+
+    function safeTransferFrom(
+        address from,
+        address to,
+        uint256 tokenId,
+        bytes memory _data
+    ) public virtual override {
+        require(
+            _isApprovedOrOwner(_msgSender(), tokenId),
+            "ERC721: transfer caller is not owner nor approved"
+        );
+        _safeTransfer(from, to, tokenId, _data);
+    }
+
+    function _safeTransfer(
+        address from,
+        address to,
+        uint256 tokenId,
+        bytes memory _data
+    ) internal virtual {
+        _transfer(from, to, tokenId);
+        require(
+            _checkOnERC721Received(from, to, tokenId, _data),
+            "ERC721: transfer to non ERC721Receiver implementer"
+        );
+    }
+
     function _exists(uint256 tokenId) internal view virtual returns (bool) {
         return _owners[tokenId] != address(0);
+    }
+
+    function _isApprovedOrOwner(
+        address spender,
+        uint256 tokenId
+    ) internal view virtual returns (bool) {
+        require(
+            _exists(tokenId),
+            "ERC721: operator query for nonexistent token"
+        );
+        address owner = ERC721.ownerOf(tokenId);
+        return (spender == owner ||
+            isApprovedForAll(owner, spender) ||
+            getApproved(tokenId) == spender);
     }
 
     function _safeMint(address to, uint256 tokenId) internal virtual {
@@ -629,7 +755,6 @@ abstract contract ERC721Enumerable is ERC721, IERC721Enumerable {
 }
 
 contract CommissionBasedNFT is ERC721Enumerable, ERC721URIStorage, Ownable {
-    
     constructor() ERC721("Commission Based NFT", "CBN") {}
 
     function bulkMint(
@@ -665,7 +790,7 @@ contract CommissionBasedNFT is ERC721Enumerable, ERC721URIStorage, Ownable {
         return super.tokenURI(tokenId);
     }
 
-    function supportsInterface( 
+    function supportsInterface(
         bytes4 interfaceId
     ) public view override(ERC721, ERC721Enumerable) returns (bool) {
         return super.supportsInterface(interfaceId);
