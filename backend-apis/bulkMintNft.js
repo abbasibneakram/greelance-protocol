@@ -11,7 +11,7 @@ app.use(bodyParser.urlencoded({ extended: true }))
 const PORT = process.env.PORT || 3000
 const PRIVATE_KEY = process.env.PRIVATE_KEY
 const API_KEY = process.env.API_KEY
-const contractAddress = process.env.CONTRACT_ADDRESS
+const contractAddress = process.env.COMMISSION_BASED_NFT
 const contractABI = [
     { inputs: [], stateMutability: 'nonpayable', type: 'constructor' },
     {
@@ -109,6 +109,16 @@ const contractABI = [
         type: 'event',
     },
     {
+        inputs: [
+            { internalType: 'address', name: 'to', type: 'address' },
+            { internalType: 'uint256', name: 'tokenId', type: 'uint256' },
+        ],
+        name: 'approve',
+        outputs: [],
+        stateMutability: 'nonpayable',
+        type: 'function',
+    },
+    {
         inputs: [{ internalType: 'address', name: 'owner', type: 'address' }],
         name: 'balanceOf',
         outputs: [{ internalType: 'uint256', name: '', type: 'uint256' }],
@@ -117,13 +127,30 @@ const contractABI = [
     },
     {
         inputs: [
-            { internalType: 'address', name: '_user', type: 'address' },
-            { internalType: 'uint256', name: '_tokenId', type: 'uint256' },
-            { internalType: 'string', name: '_uri', type: 'string' },
+            { internalType: 'address[]', name: '_users', type: 'address[]' },
+            { internalType: 'uint256[]', name: '_tokenIds', type: 'uint256[]' },
+            { internalType: 'string[]', name: '_uris', type: 'string[]' },
         ],
-        name: 'mint',
+        name: 'bulkMint',
         outputs: [],
         stateMutability: 'nonpayable',
+        type: 'function',
+    },
+    {
+        inputs: [{ internalType: 'uint256', name: 'tokenId', type: 'uint256' }],
+        name: 'getApproved',
+        outputs: [{ internalType: 'address', name: '', type: 'address' }],
+        stateMutability: 'view',
+        type: 'function',
+    },
+    {
+        inputs: [
+            { internalType: 'address', name: 'owner', type: 'address' },
+            { internalType: 'address', name: 'operator', type: 'address' },
+        ],
+        name: 'isApprovedForAll',
+        outputs: [{ internalType: 'bool', name: '', type: 'bool' }],
+        stateMutability: 'view',
         type: 'function',
     },
     {
@@ -145,6 +172,39 @@ const contractABI = [
         name: 'ownerOf',
         outputs: [{ internalType: 'address', name: '', type: 'address' }],
         stateMutability: 'view',
+        type: 'function',
+    },
+    {
+        inputs: [
+            { internalType: 'address', name: 'from', type: 'address' },
+            { internalType: 'address', name: 'to', type: 'address' },
+            { internalType: 'uint256', name: 'tokenId', type: 'uint256' },
+        ],
+        name: 'safeTransferFrom',
+        outputs: [],
+        stateMutability: 'nonpayable',
+        type: 'function',
+    },
+    {
+        inputs: [
+            { internalType: 'address', name: 'from', type: 'address' },
+            { internalType: 'address', name: 'to', type: 'address' },
+            { internalType: 'uint256', name: 'tokenId', type: 'uint256' },
+            { internalType: 'bytes', name: '_data', type: 'bytes' },
+        ],
+        name: 'safeTransferFrom',
+        outputs: [],
+        stateMutability: 'nonpayable',
+        type: 'function',
+    },
+    {
+        inputs: [
+            { internalType: 'address', name: 'operator', type: 'address' },
+            { internalType: 'bool', name: 'approved', type: 'bool' },
+        ],
+        name: 'setApprovalForAll',
+        outputs: [],
+        stateMutability: 'nonpayable',
         type: 'function',
     },
     {
@@ -179,6 +239,17 @@ const contractABI = [
     },
     {
         inputs: [
+            { internalType: 'address', name: 'from', type: 'address' },
+            { internalType: 'address', name: 'to', type: 'address' },
+            { internalType: 'uint256', name: 'tokenId', type: 'uint256' },
+        ],
+        name: 'transferFrom',
+        outputs: [],
+        stateMutability: 'nonpayable',
+        type: 'function',
+    },
+    {
+        inputs: [
             { internalType: 'address', name: 'newOwner', type: 'address' },
         ],
         name: 'transferOwnership',
@@ -194,15 +265,15 @@ const signer = new ethers.Wallet(PRIVATE_KEY, provider)
 const contract = new ethers.Contract(contractAddress, contractABI, signer)
 
 // Write contract function
-async function writeContract(walletAddress, tokenId, metadataUrl) {
+async function writeContract(walletAddresses, tokenIds, metadataUrls) {
     try {
-        console.log('Calling mint function...')
-        const transactionResponse = await contract.mint(
-            walletAddress,
-            tokenId,
-            metadataUrl
+        console.log('Calling bulkMint function...')
+        const transactionResponse = await contract.bulkMint(
+            walletAddresses,
+            tokenIds,
+            metadataUrls
         )
-        console.log(walletAddress, tokenId, metadataUrl)
+        console.log(walletAddresses, tokenIds, metadataUrls)
 
         const receipt = await transactionResponse.wait()
         if (receipt.status === 1) {
@@ -221,24 +292,24 @@ async function writeContract(walletAddress, tokenId, metadataUrl) {
 
 // POST API endpoint
 app.post('/writeContract', async (req, res) => {
-    const { walletAddress, tokenId, metadataUrl } = req.body
-    if (!walletAddress || !tokenId || !metadataUrl) {
+    const { walletAddresses, tokenIds, metadataUrls } = req.body
+    if (!walletAddresses || !tokenIds || !metadataUrls) {
         return res
             .status(400)
             .json({ success: false, error: 'Missing parameters.' })
     }
     try {
         const response = await writeContract(
-            walletAddress,
-            tokenId,
-            metadataUrl
+            walletAddresses,
+            tokenIds,
+            metadataUrls
         )
         res.json(response)
     } catch (error) {
         console.error('Error:', error)
         res.status(500).json({
             success: false,
-            error: 'Internal server error.',
+            error: error,
         })
     }
 })
