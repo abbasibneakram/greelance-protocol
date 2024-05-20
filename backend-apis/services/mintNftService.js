@@ -2,16 +2,19 @@ const {
     baseNftContract,
     referralNftContract,
 } = require('./../config/web3Config')
+const { decryptData } = require('./../utilities/encryption')
 
-async function mintBaseNft(walletAddress, tokenId, metadataUrl) {
+async function mintBaseNft(encryptedBody) {
+    const decryptedData = decryptData(encryptedBody)
+
     try {
         console.log('Calling mint function...')
         const transactionResponse = await baseNftContract.mint(
-            walletAddress,
-            tokenId,
-            metadataUrl
+            decryptedData.walletAddress,
+            decryptedData.tokenId,
+            decryptedData.metadataUrl
         )
-        console.log(walletAddress, tokenId, metadataUrl)
+        console.log('encrypted Body: ', encryptedBody)
 
         const receipt = await transactionResponse.wait()
         if (receipt.status === 1) {

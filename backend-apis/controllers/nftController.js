@@ -1,4 +1,5 @@
 const { mintBaseNft, mintReferralNft } = require('./../services/mintNftService')
+const { encryptData } = require('./../utilities/encryption')
 
 const mintBaseNftContoller = async (req, res) => {
     const { walletAddress, tokenId, metadataUrl } = req.body
@@ -7,8 +8,9 @@ const mintBaseNftContoller = async (req, res) => {
             .status(400)
             .json({ success: false, error: 'Missing parameters.' })
     }
+    const encryptedBody = encryptData(req.body)
     try {
-        const response = await mintBaseNft(walletAddress, tokenId, metadataUrl)
+        const response = await mintBaseNft(encryptedBody)
         res.json(response)
     } catch (error) {
         console.error('Error:', error)
