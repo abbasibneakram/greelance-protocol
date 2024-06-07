@@ -15,7 +15,8 @@ app.get('/', async (req, res) => {
 })
 
 app.use(cors())
-app.use(cors({ origin: 'http://localhost:4300' }))
+
+app.options('*', cors())
 app.use('/api', nftRoute)
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`)
