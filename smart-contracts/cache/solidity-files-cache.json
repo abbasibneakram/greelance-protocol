@@ -1,0 +1,369 @@
+{
+  "_format": "hh-sol-cache-2",
+  "files": {
+    "D:\\Greelance\\greelance-protocol\\smart-contracts\\contracts\\Staking.sol": {
+      "lastModificationDate": 1715852772308,
+      "contentHash": "f663b2ce0f8e7fdf039995337179e03b",
+      "sourceName": "contracts/Staking.sol",
+      "solcConfig": {
+        "version": "0.8.20",
+        "settings": {
+          "metadata": {
+            "bytecodeHash": "none"
+          },
+          "optimizer": {
+            "enabled": true,
+            "runs": 800
+          },
+          "evmVersion": "paris",
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata",
+                "storageLayout"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "0.8.20"
+      ],
+      "artifacts": []
+    },
+    "D:\\Greelance\\greelance-protocol\\smart-contracts\\contracts\\BaseNFT.sol": {
+      "lastModificationDate": 1715853621376,
+      "contentHash": "78b2b86762b4a52978b0cf12f6bde4b4",
+      "sourceName": "contracts/BaseNFT.sol",
+      "solcConfig": {
+        "version": "0.8.20",
+        "settings": {
+          "metadata": {
+            "bytecodeHash": "none"
+          },
+          "optimizer": {
+            "enabled": true,
+            "runs": 800
+          },
+          "evmVersion": "paris",
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata",
+                "storageLayout"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "0.8.20"
+      ],
+      "artifacts": [
+        "Address",
+        "BaseNFT",
+        "Context",
+        "ERC165",
+        "ERC721",
+        "ERC721Enumerable",
+        "ERC721URIStorage",
+        "IERC165",
+        "IERC721",
+        "IERC721Enumerable",
+        "IERC721Metadata",
+        "IERC721Receiver",
+        "Ownable",
+        "Strings"
+      ]
+    },
+    "D:\\Greelance\\greelance-protocol\\smart-contracts\\contracts\\CommissionBasedNFT.sol": {
+      "lastModificationDate": 1714386060917,
+      "contentHash": "0103ec18db2770e099ba0c206abb1a3a",
+      "sourceName": "contracts/CommissionBasedNFT.sol",
+      "solcConfig": {
+        "version": "0.8.20",
+        "settings": {
+          "metadata": {
+            "bytecodeHash": "none"
+          },
+          "optimizer": {
+            "enabled": true,
+            "runs": 800
+          },
+          "evmVersion": "paris",
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata",
+                "storageLayout"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "0.8.20"
+      ],
+      "artifacts": [
+        "Address",
+        "CommissionBasedNFT",
+        "Context",
+        "ERC165",
+        "ERC721",
+        "ERC721Enumerable",
+        "ERC721URIStorage",
+        "IERC165",
+        "IERC721",
+        "IERC721Enumerable",
+        "IERC721Metadata",
+        "IERC721Receiver",
+        "Ownable",
+        "Strings"
+      ]
+    },
+    "D:\\Greelance\\greelance-protocol\\smart-contracts\\contracts\\Greelance.sol": {
+      "lastModificationDate": 1714386060918,
+      "contentHash": "37c13e6fb6809d4588d5c2171a5e3038",
+      "sourceName": "contracts/Greelance.sol",
+      "solcConfig": {
+        "version": "0.8.20",
+        "settings": {
+          "metadata": {
+            "bytecodeHash": "none"
+          },
+          "optimizer": {
+            "enabled": true,
+            "runs": 800
+          },
+          "evmVersion": "paris",
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata",
+                "storageLayout"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "0.8.20"
+      ],
+      "artifacts": [
+        "Context",
+        "ERC20",
+        "Greelance",
+        "IERC20",
+        "IERC20Metadata",
+        "Ownable"
+      ]
+    },
+    "D:\\Greelance\\greelance-protocol\\smart-contracts\\contracts\\PriceGuranteeStaking.sol": {
+      "lastModificationDate": 1714386060918,
+      "contentHash": "020d61f27af77d1cb048998a7060c03a",
+      "sourceName": "contracts/PriceGuranteeStaking.sol",
+      "solcConfig": {
+        "version": "0.8.20",
+        "settings": {
+          "metadata": {
+            "bytecodeHash": "none"
+          },
+          "optimizer": {
+            "enabled": true,
+            "runs": 800
+          },
+          "evmVersion": "paris",
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata",
+                "storageLayout"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "0.8.20"
+      ],
+      "artifacts": [
+        "AggregatorInterface",
+        "IERC20",
+        "IUniswapV2Router",
+        "PriceGuaranteeStaking"
+      ]
+    },
+    "D:\\Greelance\\greelance-protocol\\smart-contracts\\contracts\\SeedRoundIco.sol": {
+      "lastModificationDate": 1714386060919,
+      "contentHash": "aaad1ced2b5326c22698cf80ec654330",
+      "sourceName": "contracts/SeedRoundIco.sol",
+      "solcConfig": {
+        "version": "0.8.20",
+        "settings": {
+          "metadata": {
+            "bytecodeHash": "none"
+          },
+          "optimizer": {
+            "enabled": true,
+            "runs": 800
+          },
+          "evmVersion": "paris",
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata",
+                "storageLayout"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "0.8.20"
+      ],
+      "artifacts": [
+        "AggregatorV3Interface",
+        "ICO",
+        "IERC20",
+        "ReentrancyGuard"
+      ]
+    },
+    "D:\\Greelance\\greelance-protocol\\smart-contracts\\contracts\\TeamVesting.sol": {
+      "lastModificationDate": 1714386060921,
+      "contentHash": "2174af55a02189bf62000b7f26aa32d7",
+      "sourceName": "contracts/TeamVesting.sol",
+      "solcConfig": {
+        "version": "0.8.20",
+        "settings": {
+          "metadata": {
+            "bytecodeHash": "none"
+          },
+          "optimizer": {
+            "enabled": true,
+            "runs": 800
+          },
+          "evmVersion": "paris",
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata",
+                "storageLayout"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "0.8.20"
+      ],
+      "artifacts": [
+        "IERC20",
+        "ReentrancyGuard",
+        "TeamVesting"
+      ]
+    },
+    "D:\\Greelance\\greelance-protocol\\smart-contracts\\contracts\\TestGrl.sol": {
+      "lastModificationDate": 1714386060921,
+      "contentHash": "5dffbf58c83cf4746df5fe66043d924f",
+      "sourceName": "contracts/TestGrl.sol",
+      "solcConfig": {
+        "version": "0.8.20",
+        "settings": {
+          "metadata": {
+            "bytecodeHash": "none"
+          },
+          "optimizer": {
+            "enabled": true,
+            "runs": 800
+          },
+          "evmVersion": "paris",
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata",
+                "storageLayout"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "0.8.20",
+        "^0.8.0",
+        "^0.8.0",
+        "^0.8.0"
+      ],
+      "artifacts": [
+        "Context",
+        "ERC20",
+        "Greelance",
+        "IERC20",
+        "IERC20Metadata"
+      ]
+    }
+  }
+}

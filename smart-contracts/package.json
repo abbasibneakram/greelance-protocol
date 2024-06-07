@@ -34,7 +34,7 @@
         "chai": "^4.2.0",
         "ethereum-waffle": "^3.4.4",
         "ethers": "^5.7.0",
-        "hardhat": "^2.9.9",
+        "hardhat": "^2.22.4",
         "hardhat-gas-reporter": "^1.0.9",
         "node-fetch": "2",
         "solidity-coverage": "^0.7.21",

@@ -1,5 +1,5 @@
-// // SPDX-License-Identifier: MIT
-// pragma solidity ^0.8.20;
+// SPDX-License-Identifier: MIT
+pragma solidity 0.8.20;
 
 // import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 // import "@openzeppelin/contracts/utils/math/SafeMath.sol";
@@ -34,15 +34,15 @@
 //         // Initialize reward rates for different staking durations
 //         rewardRates[30 days] =  0.025  ether; //  0.025% daily return
 //         rewardRates[60 days] =  0.0275  ether; //  0.0275% daily return
-//         rewardRates[60 days] =  0.0275  ether; 
-//         rewardRates[60 days] =  0.0275  ether; 
-//         rewardRates[60 days] =  0.0275  ether; 
-//         rewardRates[60 days] =  0.0275  ether; 
-//         rewardRates[60 days] =  0.0275  ether; 
-//         rewardRates[60 days] =  0.0275  ether; 
-//         rewardRates[60 days] =  0.0275  ether; 
-//         rewardRates[60 days] =  0.0275  ether; 
-//         rewardRates[60 days] =  0.0275  ether; 
+//         rewardRates[60 days] =  0.0275  ether;
+//         rewardRates[60 days] =  0.0275  ether;
+//         rewardRates[60 days] =  0.0275  ether;
+//         rewardRates[60 days] =  0.0275  ether;
+//         rewardRates[60 days] =  0.0275  ether;
+//         rewardRates[60 days] =  0.0275  ether;
+//         rewardRates[60 days] =  0.0275  ether;
+//         rewardRates[60 days] =  0.0275  ether;
+//         rewardRates[60 days] =  0.0275  ether;
 //         // ... Add other reward rates for different durations
 //     }
 
@@ -55,7 +55,6 @@
 //                 staker.rewardDebt = staker.amount.mul(rewardPerTokenStored).div(1e18);
 //                 staker.lastInteraction = block.timestamp;
 
-                
 //                 GRL.transfer(account, pendingReward);
 //                 emit Claimed(account, pendingReward);
 //             }
