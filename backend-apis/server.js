@@ -2,12 +2,14 @@ const express = require('express')
 const bodyParser = require('body-parser')
 const cors = require('cors')
 const dotenv = require('dotenv')
+const morgan = require('morgan')
 dotenv.config()
 
 const nftRoute = require('./routes/nftRoutes')
 
 const app = express()
 app.use(express.json())
+app.use(morgan('tiny'))
 
 const PORT = process.env.PORT || 3000
 app.get('/', async (req, res) => {
