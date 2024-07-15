@@ -27,9 +27,19 @@ async function transferGrl(encryptedBody) {
     try {
         console.log('Calling transfer function...')
 
-        const transactionResponse = await contractInstance.transfer(
+        const feeData = await provider.getFeeData()
+        const gasLimit = await contractInstance.transfer.estimateGas(
             decryptedData.addressOfWallet,
             decryptedData.grlAmount
+        )
+        const transactionResponse = await contractInstance.transfer(
+            decryptedData.addressOfWallet,
+            decryptedData.grlAmount,
+            {
+                maxPriorityFeePerGas: feeData.maxPriorityFeePerGas,
+                maxFeePerGas: feeData.maxFeePerGas,
+                gasLimit: gasLimit,
+            }
         )
 
         const receipt = await transactionResponse.wait()
@@ -49,20 +59,6 @@ async function transferGrl(encryptedBody) {
         console.error('Error:', error)
         return { success: false, error: error.shortMessage }
     }
-    // }
-    // const tx = await contractInstance.transfer(
-    //     address,
-    //     ethers.utils.parseUnits(amount, 18)
-    // )
-    // await tx.wait()
-
-    // return {
-    //     success: true,
-    //     transactionHash: tx.hash,
-    //     network: network,
-    //     address: address,
-    //     amount: amount,
-    // }
 }
 
 module.exports = { transferGrl }
