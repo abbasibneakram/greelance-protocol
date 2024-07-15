@@ -24,7 +24,7 @@ const referralNftContractAddress = process.env.REFERRAL_NFT_CONTRACT_ADDRESS
 
 // Setting up the provider and signer
 // const ethProvider = new ethers.AlchemyProvider('homestead', ALCHEMY_API_KEY)
-// const polProvider = new ethers.AlchemyProvider('matic', ALCHEMY_API_KEY)
+const polProvider = new ethers.AlchemyProvider('matic', ALCHEMY_API_KEY)
 
 // const ethSigner = new ethers.Wallet(PRIVATE_KEY, ethProvider)
 // const polSigner = new ethers.Wallet(PRIVATE_KEY, polProvider)
@@ -32,9 +32,9 @@ const referralNftContractAddress = process.env.REFERRAL_NFT_CONTRACT_ADDRESS
 const ethProvider = new ethers.JsonRpcProvider(
     process.env.ETH_ALCHEMY_HTTP_ENDPOINT
 )
-const polProvider = new ethers.JsonRpcProvider(
-    process.env.POL_ALCHEMY_HTTP_ENDPOINT
-)
+// const polProvider = new ethers.JsonRpcProvider(
+//     process.env.POL_ALCHEMY_HTTP_ENDPOINT
+// )
 
 console.log('Ethereum Provider', ethProvider)
 console.log('Polygon Provider', polProvider)
