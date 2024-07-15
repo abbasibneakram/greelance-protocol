@@ -17,7 +17,6 @@ const decryptData = (encryptedData) => {
     const iv = Buffer.from(encryptedData.slice(0, 32), 'hex')
     const encrypted = encryptedData.slice(32)
     const decipher = crypto.createDecipheriv('aes-256-cbc', keyBuffer, iv)
-
     let decrypted = decipher.update(encrypted, 'hex', 'utf8')
     decrypted += decipher.final('utf8')
 
