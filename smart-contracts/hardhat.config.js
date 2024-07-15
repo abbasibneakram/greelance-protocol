@@ -1,52 +1,39 @@
-require('ethereum-waffle')
+require('@nomicfoundation/hardhat-toolbox')
 require('dotenv').config()
-require('@nomiclabs/hardhat-waffle')
-require('@nomiclabs/hardhat-etherscan')
-require('@openzeppelin/hardhat-upgrades')
-console.log('key', process.env.PRIVATE_KEY)
+require('@nomicfoundation/hardhat-verify')
+
+const PRIVATE_KEY = process.env.PRIVATE_KEY
+const POLYGON_SCAN_KEY = process.env.POLYGON_SCAN_KEY
+const ETHER_SCAN_KEY = process.env.ETHER_SCAN_KEY
+const ALCHEMY_API_KEY = process.env.ALCHEMY_API_KEY
+
 module.exports = {
-    solidity: {
-        version: '0.8.20',
-        settings: {
-            metadata: {
-                bytecodeHash: 'none',
-            },
-            optimizer: {
-                enabled: true,
-                runs: 800,
-            },
-        },
-    },
-
-    paths: {
-        artifacts: './artifacts',
-    },
-
+    solidity: '0.8.20',
     networks: {
+        sepolia: {
+            url: `https://eth-sepolia.g.alchemy.com/v2/${ALCHEMY_API_KEY}`,
+            accounts: [PRIVATE_KEY],
+        },
+        ethereum: {
+            url: `https://eth-mainnet.g.alchemy.com/v2/${ALCHEMY_API_KEY}`,
+            accounts: [PRIVATE_KEY],
+        },
+        amoy: {
+            url: `https://polygon-amoy.g.alchemy.com/v2/${ALCHEMY_API_KEY}`,
+            accounts: [PRIVATE_KEY],
+        },
         polygon: {
-            url: `https://rpc-amoy.polygon.technology/`,
-            // accounts: [private_key],
-            accounts: [
-                '0x59ce98b41b9eb3a0ebfb24f585892bcae6816b3f060c44e85660b70af61a5d11',
-            ],
-        },
-
-        polygonMainnet: {
-            url: `https://polygon-rpc.com/`,
-            // accounts: [private_key],
-            accounts: [`${process.env.PRIVATE_KEY}`],
-        },
-        sepoliaTestnet: {
-            url: `https://1rpc.io/sepolia`,
-            // accounts: [private_key],
-            accounts: [`${process.env.PRIVATE_KEY}`],
-        },
-        mainnet: {
-            url: `https://1rpc.io/sepolia`,
-            accounts: [`${process.env.PRIVATE_KEY}`],
+            url: `https://polygon-mainnet.g.alchemy.com/v2/${ALCHEMY_API_KEY}`,
+            accounts: [PRIVATE_KEY],
         },
     },
     etherscan: {
-        apiKey: `${process.env.ETHER_SCAN_KEY}`,
+        apiKey: {
+            sepolia: ETHER_SCAN_KEY,
+            polygon: POLYGON_SCAN_KEY,
+        },
+    },
+    sourcify: {
+        enabled: false,
     },
 }

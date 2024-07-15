@@ -1,48 +1,39 @@
 {
-    "name": "hardhat-project",
+    "name": "smart-contracts",
     "version": "1.0.0",
-    "main": "index.js",
-    "scripts": {
-        "test": "npx hardhat test",
-        "compile": "npx hardhat compile",
-        "test-case": "npx hardhat test --grep"
+    "main": "hardhat.config.js",
+    "directories": {
+        "test": "test"
     },
-    "repository": {
-        "type": "git",
-        "url": "git+https://github.com/abbasibneakram/greelance.git"
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1"
     },
     "keywords": [],
     "author": "",
     "license": "ISC",
-    "bugs": {
-        "url": "https://github.com/abbasibneakram/greelance/issues"
-    },
-    "homepage": "https://github.com/abbasibneakram/greelance#readme",
     "description": "",
     "devDependencies": {
-        "@ethersproject/abi": "^5.4.7",
-        "@ethersproject/providers": "^5.4.7",
-        "@nomicfoundation/hardhat-chai-matchers": "^1.0.0",
-        "@nomicfoundation/hardhat-network-helpers": "^1.0.0",
-        "@nomicfoundation/hardhat-toolbox": "^1.0.1",
-        "@nomiclabs/hardhat-ethers": "^2.1.1",
-        "@nomiclabs/hardhat-etherscan": "^3.1.0",
-        "@nomiclabs/hardhat-waffle": "^2.0.3",
-        "@openzeppelin/hardhat-upgrades": "^1.20.0",
-        "@typechain/ethers-v5": "^10.1.0",
-        "@typechain/hardhat": "^6.1.2",
-        "chai": "^4.2.0",
-        "ethereum-waffle": "^3.4.4",
-        "ethers": "^5.7.0",
-        "hardhat": "^2.22.4",
-        "hardhat-gas-reporter": "^1.0.9",
-        "node-fetch": "2",
-        "solidity-coverage": "^0.7.21",
-        "typechain": "^8.1.0"
+        "@nomicfoundation/hardhat-chai-matchers": "^2.0.7",
+        "@nomicfoundation/hardhat-ethers": "^3.0.0",
+        "@nomicfoundation/hardhat-ignition": "^0.15.0",
+        "@nomicfoundation/hardhat-ignition-ethers": "^0.15.0",
+        "@nomicfoundation/hardhat-network-helpers": "^1.0.11",
+        "@nomicfoundation/hardhat-toolbox": "^5.0.0",
+        "@nomicfoundation/hardhat-verify": "^2.0.0",
+        "@typechain/ethers-v6": "^0.5.0",
+        "@typechain/hardhat": "^9.0.0",
+        "@types/chai": "^4.3.16",
+        "@types/mocha": "^10.0.7",
+        "chai": "^4.4.1",
+        "ethers": "^6.4.0",
+        "hardhat": "^2.22.5",
+        "hardhat-gas-reporter": "^1.0.8",
+        "solidity-coverage": "^0.8.0",
+        "ts-node": "^10.9.2",
+        "typechain": "^8.3.0",
+        "typescript": "^5.5.2"
     },
     "dependencies": {
-        "@openzeppelin/contracts": "^4.7.3",
-        "dotenv": "^16.0.1",
-        "keccak256": "^1.0.6"
+        "dotenv": "^16.4.5"
     }
 }
