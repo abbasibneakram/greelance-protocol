@@ -54,11 +54,19 @@ const getGrlUsdPriceController = async (req, res) => {
 }
 
 const transferGrlController = async (req, res) => {
-    const { addressOfWallet, grlAmount, network } = req.body
-    if (!addressOfWallet || !grlAmount || !network) {
+    const { addressOfWallet, grlAmount, network, secretKey } = req.body
+    const ENV_SECRET_KEY = process.env.SECRET_KEY
+
+    if (!addressOfWallet || !grlAmount || !network || !secretKey) {
         return res
             .status(400)
-            .json({ success: false, error: 'Missing parameters.' })
+            .json({ success: false, error: 'Missing parameters!' })
+    }
+
+    if (secretKey !== ENV_SECRET_KEY) {
+        return res
+            .status(403)
+            .json({ success: false, error: 'Invalid secret key!' })
     }
     const encryptedBody = encryptData(req.body)
     try {
