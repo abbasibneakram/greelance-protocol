@@ -50,6 +50,8 @@ async function transferGrl(encryptedBody) {
                 success: true,
                 transactionHash: transactionResponse.hash,
                 network: decryptedData.network,
+                amountTransferred: decryptedData.grlAmount / 10 ** 9, // Adding transferred amount to the response
+                recipientWallet: decryptedData.addressOfWallet, // Adding recipient wallet address to the response
             }
         } else {
             console.log('Transaction failed!')
