@@ -4,20 +4,18 @@ const {
     ethProvider,
     polProvider,
 } = require('../config/web3Config')
-const { decryptData } = require('../utilities/encryption')
+// const { decryptData } = require('../utilities/encryption')
 
 const ethers = require('ethers')
 
-async function transferGrl(encryptedBody) {
-    const decryptedData = decryptData(encryptedBody)
-
+async function transferGrl(controllerBody) {
     let contractInstance
     let provider
 
-    if (decryptedData.network === 'ethereum') {
+    if (controllerBody.network === 'ethereum') {
         contractInstance = ethGrlInstance
         provider = ethProvider
-    } else if (decryptedData.network === 'polygon') {
+    } else if (controllerBody.network === 'polygon') {
         contractInstance = polGrlInstance
         provider = polProvider
     } else {
@@ -29,12 +27,12 @@ async function transferGrl(encryptedBody) {
 
         const feeData = await provider.getFeeData()
         const gasLimit = await contractInstance.transfer.estimateGas(
-            decryptedData.addressOfWallet,
-            decryptedData.grlAmount
+            controllerBody.addressOfWallet,
+            controllerBody.grlAmount
         )
         const transactionResponse = await contractInstance.transfer(
-            decryptedData.addressOfWallet,
-            decryptedData.grlAmount,
+            controllerBody.addressOfWallet,
+            controllerBody.grlAmount,
             {
                 maxPriorityFeePerGas: feeData.maxPriorityFeePerGas,
                 maxFeePerGas: feeData.maxFeePerGas,
@@ -49,9 +47,9 @@ async function transferGrl(encryptedBody) {
             return {
                 success: true,
                 transactionHash: transactionResponse.hash,
-                network: decryptedData.network,
-                amountTransferred: decryptedData.grlAmount / 10 ** 9, // Adding transferred amount to the response
-                recipientWallet: decryptedData.addressOfWallet, // Adding recipient wallet address to the response
+                network: controllerBody.network,
+                amountTransferred: controllerBody.grlAmount / 10 ** 9, // Adding transferred amount to the response
+                recipientWallet: controllerBody.addressOfWallet, // Adding recipient wallet address to the response
             }
         } else {
             console.log('Transaction failed!')
